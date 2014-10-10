@@ -20,8 +20,14 @@
 \newcommand{\blockdist}{1.3}
 \newcommand{\edgedist}{1.5}
 
+\newcommand{\textsize}{\small}
+
 \newcommand{\element}[2]{node (p#1) [element]
-  {{\scriptsize #2}}}
+  {{\textsize #2}}}
+\newcommand{\elementProg}[2]{node (prog#1) [element]
+  {{\texttt{\textsize #2}}}}
+
+\newcommand{\pipe}{edge[draw=none] node [auto = false, allow upside down] {\texttt{\textsize\%$>$\%}}}
 
 % Draw background
 \newcommand{\background}[5]{%
@@ -34,12 +40,12 @@
     \path[fill=yellow!20,rounded corners, draw=black!50, dashed]
       (a1) rectangle (a2);
     \path (a1.east |- a1.south)+(0.8,-0.3) node (u1)[texto]
-      {\scriptsize\textit{#5}};
+      {\textsize\textit{#5}};
   \end{pgfonlayer}}
 
 \newcommand{\transreceptor}[3]{%
   \path [linepart] (#1.east) -- node [above]
-    {\scriptsize Transreceptor #2} (#3);}
+    {\textsize Transreceptor #2} (#3);}
 
 \begin{document}
 \begin{tikzpicture}[scale=0.7,transform shape]
@@ -50,24 +56,24 @@
   \path (p1.south)+(0.0,-1.25) \element{2}{Data generation};
   \path (p2.south)+(0.0,-1.25) \element{22}{Computations on the population};
   
-  \path (p1.east)+(2.5,0.0) \element{11}{sim\_base()};
-  \path (p2.east)+(2.5,0.0) \element{21}{sim\_gen() \\ sim\_gen\_cont() \\ sim\_resp()};
-  \path (p22.east)+(2.5,0.0) \element{221}{sim\_comp\_pop()};
+  \path (p1.east)+(2.5,0.0) \elementProg{1}{sim\_base()};
+  \path (p2.east)+(2.5,0.0) \elementProg{2}{sim\_gen()};
+  \path (p22.east)+(2.5,0.0) \elementProg{22}{sim\_comp\_pop()};
   
   % Sampling
-  \path (p22.south)+(0.0,-1.75) \element{3}{Drawing sample from population};
+  \path (p22.south)+(0.0,-2) \element{3}{Drawing sample from population};
   \path (p3.south)+(0.0,-1.25) \element{4}{Computations on the sample};
   
-  \path (p3.east)+(2.5,0.0) \element{31}{sim\_sample()};
-  \path (p4.east)+(2.5,0.0) \element{41}{sim\_comp\_sample()};
+  \path (p3.east)+(2.5,0.0) \elementProg{3}{sim\_sample()};
+  \path (p4.east)+(2.5,0.0) \elementProg{4}{sim\_comp\_sample()};
   
   
   % Aggregation
-  \path (p4.south)+(0.0,-1.5) \element{5}{Aggregating data};
+  \path (p4.south)+(0.0,-2) \element{5}{Aggregating data};
   \path (p5.south)+(0.0,-1.25) \element{6}{Computations on aggregated data};
 
-  \path (p5.east)+(2.5,0.0) \element{51}{sim\_agg()};
-  \path (p6.east)+(2.5,0.0) \element{61}{sim\_comp\_agg()};
+  \path (p5.east)+(2.5,0.0) \elementProg{5}{sim\_agg()};
+  \path (p6.east)+(2.5,0.0) \elementProg{6}{sim\_comp\_agg()};
        
   % Draw arrows between elements
   \path [line] (p1.south) -- node [above] {} (p2);
@@ -76,17 +82,25 @@
   \path [line] (p3.south) -- node [above] {} (p4);
   \path [line] (p4.south) -- node [above] {} (p5);
   \path [line] (p5.south) -- node [above] {} (p6);
+  
+  % Draw pipes
+  \path [-stealth, auto] (prog1.south) \pipe (prog2.north);
+  \path [-stealth, auto] (prog2.south) \pipe (prog22.north);
+  \path [-stealth, auto] (prog22.south) \pipe (prog3.north);
+  \path [-stealth, auto] (prog3.south) \pipe (prog4.north);
+  \path [-stealth, auto] (prog4.south) \pipe (prog5.north);
+  \path [-stealth, auto] (prog5.south) \pipe (prog6.north);
 
   % dashed lines
   \path [linepart] (p6.west) -- +(-1.25,0.0) -- ($(p2.west)+(-1.25, 0.0)$)
     -- node [above] {} (p2);
 
   % text
-  \node [label=below:\rotatebox{90}{\scriptsize repeat r-times}] at ($(p6.west) + (-1.0, 4.0) $) {};
+  \node [label=below:\rotatebox{90}{\textsize repeat r-times}] at ($(p6.west) + (-1.0, 4.0) $) {};
    
-  \background{p1}{p1}{p21}{p22}{Population}
-  \background{p3}{p3}{p41}{p4}{Sample}
-  \background{p5}{p5}{p61}{p6}{Aggregate}
+  \background{p1}{p1}{prog2}{p22}{Population}
+  \background{p3}{p3}{prog4}{p4}{Sample}
+  \background{p5}{p5}{prog6}{p6}{Aggregate}
 
 \end{tikzpicture}
 \end{document} 
