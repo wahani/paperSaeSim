@@ -5,22 +5,22 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% almost as usual
-\author{Matthias Templ\\ Vienna University of Technology \And 
-        Second Author\\Plus Affiliation}
-\title{A Capitalized Title: Something about a Topic}
+\author{Sebastian Warnholz\\ Freie Universit\"at Berlin \And 
+        Timo Schmid \\ Freie Universit\"at Berlin}
+\title{Simulation Tools for Small Area Estimation: Introducing the \proglang{R}-package \proglang{saeSim}}
 
 %% for pretty printing and a nice hypersummary also set:
-\Plainauthor{Matthias Templ, Second Author} %% comma-separated
-\Plaintitle{A Capitalized Title: Something about a Topic} %% without formatting
-\Shorttitle{A Capitalized Title} %% a short title (if necessary)
+\Plainauthor{Sebastian Warnholz, Timo Schmid} %% comma-separated
+\Plaintitle{Simulation Tools for Small Area Estimation: Introducing the R-package saeSim} %% without formatting
+\Shorttitle{Simulation Tools for Small Area Estimation} %% a short title (if necessary)
 
 %% an abstract and keywords
 \Abstract{
   The abstract of the article in English
   
 }
-\Keywords{keywords, comma-separated, not capitalized, \proglang{R}}
-\Plainkeywords{keywords, comma-separated, not capitalized, R} %% without formatting
+\Keywords{package, small area estimation, reproducible research, simulation, \proglang{R}}
+\Plainkeywords{package, small area estimation, reproducible research, simulation, R} %% without formatting
 %% at least one keyword must be supplied
 
 %% publication information
@@ -37,12 +37,12 @@
 %% The address of (at least) one author should be given
 %% in the following format:
 \Address{
-  Matthias Templ\\
-  Department of Statistics and Probability Theory\\
-  Vienna University of Technology\\
-  A-1040 Vienna, Austria\\
-  E-mail: \email{templ@tuwien.ac.at}\\
-  URL: \url{http://www.statistik.tuwien.ac.at/public/templ}
+  Sebastian Warnholz\\
+  Department of Economics\\
+  Freie Universit\"at Berlin\\
+  D-14195 Berlin, Germany\\
+  E-mail: \email{Sebastian.Warnholz@fu-berlin.de}\\
+  URL: \url{http://www.wiwiss.fu-berlin.de/fachbereich/vwl/Schmid/Team/Warnholz.html}
 }
 %% It is also possible to add a telephone and fax number
 %% before the e-mail in the following format:
@@ -59,12 +59,18 @@
 
 %% include your article here, just as usual
 
+% Loading (and installing) necessary packages.
 <<echo=FALSE>>=
-suppressPackageStartupMessages(library(saeSim))
-@
-
-<<>>=
-sim_base_lm()
+if(!suppressPackageStartupMessages(require(saeSim))) {
+  if(!require(devtools)) {
+    install.packages("devtools", repos = "http://cran.at.r-project.org/", dependencies = TRUE)
+    library(devtools)
+  }
+  
+  install.packages(c("dplyr", "ggplot2", "MASS", "spdep"), 
+                   repos = "http://cran.at.r-project.org/", dependencies = TRUE)
+  install_github("wahani/saeSim")
+}
 @
 
 \section{Introduction}

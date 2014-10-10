@@ -1,0 +1,127 @@
+\documentclass[article]{ajs}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% declarations for jss.cls %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% almost as usual
+\author{Sebastian Warnholz\\ Freie Universit\"at Berlin \And 
+        Timo Schmid \\ Freie Universit\"at Berlin}
+\title{Simulation Tools for Small Area Estimation: Introducing the \proglang{R}-package \proglang{saeSim}}
+
+%% for pretty printing and a nice hypersummary also set:
+\Plainauthor{Sebastian Warnholz, Timo Schmid} %% comma-separated
+\Plaintitle{Simulation Tools for Small Area Estimation: Introducing the R-package saeSim} %% without formatting
+\Shorttitle{Simulation Tools for Small Area Estimation} %% a short title (if necessary)
+
+%% an abstract and keywords
+\Abstract{
+  The abstract of the article in English
+  
+}
+\Keywords{package, small area estimation, reproducible research, simulation, \proglang{R}}
+\Plainkeywords{package, small area estimation, reproducible research, simulation, R} %% without formatting
+%% at least one keyword must be supplied
+
+%% publication information
+%% NOTE: Typically, this can be left commented and will be filled out by the technical editor
+%% \Volume{50}
+%% \Issue{9}
+%% \Month{June}
+%% \Year{2012}
+%% \Submitdate{2012-06-04}
+%% \Acceptdate{2012-06-04}
+%% \setcounter{page}{1}
+\Pages{1--xx}
+
+%% The address of (at least) one author should be given
+%% in the following format:
+\Address{
+  Sebastian Warnholz\\
+  Department of Economics\\
+  Freie Universit\"at Berlin\\
+  D-14195 Berlin, Germany\\
+  E-mail: \email{Sebastian.Warnholz@fu-berlin.de}\\
+  URL: \url{http://www.wiwiss.fu-berlin.de/fachbereich/vwl/Schmid/Team/Warnholz.html}
+}
+%% It is also possible to add a telephone and fax number
+%% before the e-mail in the following format:
+%% Telephone: +43/512/507-7103
+%% Fax: +43/512/507-2851
+
+%% for those who use Sweave please include the following line (with % symbols):
+%% need no \usepackage{Sweave.sty}
+
+%% end of declarations %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{document}
+
+%% include your article here, just as usual
+
+% Loading (and installing) necessary packages.
+
+\section{Introduction}
+A brief overview of what the reader can expect of this article. What is the aim of this article and where can it be located in science. Discussion of the reproducible research movement and where the package may be beneficial. Packages like Sweave, knitr, R-markdown. How can simulation studies (the \proglang{R}-code) be published? As script? As stand-alone-package? How can ideas for specific data generation tools be shared amongst the small area community and thus be more transparent: saeSim (far-fetched but anyway).
+
+%Graphics should be inserted as PostScript files using the
+%package {\tt psfig} or {\tt graphicx}. Bibliographic references
+%should be given using {\tt bibtex} in the {\em author-date\/}
+%style.
+
+\section{Simulation studies in small area estimation}
+The role of simulation studies in the field. Separation into model-based and design-based simulation studies. How does \proglang{saeSim} address these 2 perspectives? Identifying steps/phases/components of simulation studies (data generation, sampling, computation).
+
+
+\section{saeSim: A simulation framework}
+Introducing a simulation study as a data manipulation process. From data generation to estimating models. How can this process be mapped into the \proglang{R}-language. Present the simulation phases as flow-diagram and map the function names to the problem domain. Defining interfaces between phases: \proglang{data.frame} in, \proglang{data.frame} out. What is the difference between a design-based (fixed-population) and model-based (random-population) approach. 
+
+Why is this package helping in terms of literate programming (code is written for humans not machines) and reproducible research? Package naming conventions. Use the \proglang{\%>\%} operator to compose simulation set-ups. Reuse defined scenarios to compose new scenarios: What is a contamination scenario? A standard scenario plus contamination:
+
+\begin{Schunk}
+\begin{Sinput}
+> contaminatedSetup <- standardSetup %>% sim_gen_cont()
+\end{Sinput}
+\end{Schunk}
+
+\subsection{Data generation}
+This is not a data generation tool. However, it supports some useful functions to add random variates to the data. Definition of outliers, see Rao (?) -- how is it addressed in the package. More than linear models, define any response with:
+\begin{Schunk}
+\begin{Sinput}
+> setup %>% sim_resp_eq(y = g(2 * x) + e)
+\end{Sinput}
+\end{Schunk}
+
+\subsection{Drawing samples}
+Is present in unit-level simulation studies. Draw with simple random sampling from the whole population or within cluster/domains. Specify the sample size as integer or fraction and add weights if necessary. Wrappers around \proglang{dplyr::sample\_n} and \proglang{dplyr::sample\_frac}.
+
+\subsection{Adding customized computations}
+Adding user specified functions to the simulation process is what separates this package from a mere data generation tool. The interface is simple: Add functions with one argument which is the data at that moment and which return the modified data. I am not sure if this and the sampling section is necessary -- maybe it should just be summarized in the overview section...
+
+\subsection{Separation of designing and running simulations}
+First develop a scenario outside any looping structures, then run it R-times:
+
+\begin{Schunk}
+\begin{Sinput}
+> simulationResults <- simSetup %>% sim(R = 500)
+\end{Sinput}
+\end{Schunk}
+
+There is an easy back-end to run simulations in parallel (in Windows with special care):
+
+\begin{Schunk}
+\begin{Sinput}
+> simulationResults <- simSetup %>% sim(R = 500, parallel = TRUE, mc.cores = 8)
+\end{Sinput}
+\end{Schunk}
+
+\section{Outlook}
+Use this package to share and publish simulation studies alongside papers. Contribute to the package to make your ideas available. Contribute to the package and make your whole simulation study available. 
+
+
+%\bibliographystyle{plainat}
+\bibliography{guidelinesAJS}
+
+
+
+\end{document}
