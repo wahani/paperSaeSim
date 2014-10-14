@@ -6,6 +6,7 @@
 
 \usepackage{wrapfig}
 \usepackage{graphicx}
+\include{mathOperators}
 
 %% almost as usual
 \author{Sebastian Warnholz\\ Freie Universit\"at Berlin \And 
@@ -66,16 +67,31 @@
 % Loading (and installing) necessary packages.
 
 \section{Introduction}
-Reproducible Research has become a widely discussed topic inside science and also the field of statistics. Thanks to the many mostly open-source tools like the \proglang{R}-language and \LaTeX, and also packages like knitr and Sweave, the integration of source code and text is possible and as a problem solved. In that sense the demand for Literate Programming can be if wanted incorporated in the work flow of a scientist. Not only are tools available to make research reproducible, also the demand of making the analysis of articles reproducible is rising. What this means is, that the source-code and data is published alongside an article. However, the requirements in style and clarity of source code are different from the written words in the article itself. This demand \textit{human readable source-code} has already been expressed by Knuth (1984): 
+Reproducible Research has become a widely discussed topic inside science and also the field of statistics. Thanks to the many mostly open-source tools like the \proglang{R}-language \cite{r14} and \LaTeX, and also packages like knitr \citep{yihui13} and Sweave \citep{leisch02} and more recently rmarkdown \citep{allaire14}, the integration of source code and text is possible and as a problem solved. In that sense the demand for Literate Programming can be if wanted incorporated in the work flow of a scientist. Not only are tools available to make research reproducible, also the demand of making the analysis of articles reproducible is rising. This means, that the source-code and data is published alongside an article. However, the requirements in style and clarity of source code are different from the written words in the article itself. This demand \textit{human readable source-code} has already been expressed by Knuth (1984): 
 \begin{quote}
-\textit{Instead of imagining that our main task is to instruct a computer what to do, let us concentrate rather on explaining to human beings what we want a computer to do.}
+\textit{Instead of imagining that our main task is to instruct a computer what to do, let us concentrate rather on explaining to human beings what we want a computer to do.} \cite[p.99]{knuth92} 
 \end{quote}
 Small Area Estimation is a growing field inside the field of statistics, where simulation studies play an important role. New statistical models are applied in model-based and design-based simulation studies. Considering the demands in reproducibility we want to propose a framework for simulation studies. This framework addresses three demands. First, making tools for data generation available and reusable. Second, unify the process behind simulation studies inside the field of Small Area Estimation. And third, making source-code of simulation studies available, such that it supports the conducted research in a transparent manner.
-In this article we want to introduce a new package for the \proglang{R}-language addressing these demands. We will show the importance of simulation studies in the field. Introduce the simulation framework. And demonstrate how to use the package to map the simulation as a process to \proglang{R}.
+In this article we want to introduce a new package for the \proglang{R}-language addressing these demands. We will show the importance of simulation studies in the field, introduce the simulation framework and demonstrate how to use the package to map the simulation as a process to \proglang{R}.
 
-\section{Small Area Estimation}
-What is small area estimation? 2 Models to introduce. FH + BHF. Why are simulation studies important in the field.
+\section{Small area estimation}
+The objective of small area estimation is to produce reliable statistics (means, quantiles, proportions, etc.) for domains where little or no sampled units are available. Groups may be areas or other entities, for example defined by socio-economic characteristics. The demand for such estimators is rising as they are used for fund allocation, educational and health programs \citep{pfeffermann13}. As direct estimation of such statistics are considered to be unreliable, methods in small area estimation try to improve the domain predictions by borrowing strength from neighboured or \textit{similar} domains. This can be achieved by using additional information from census data to assist the prediction for non-sampled or domains with little information. For the purpose of this article we will introduce two basic models frequently used in small area estimation, the unit-level model introduced by \cite{battese1988} and the area-level model introduced by \cite{fay79}.
 
+As applications in small area estimations rely often on sensitive information unit-level information is not always available. Instead only aggregates, or rather the direct estimators are. In such situations area-level models are used. The area-level model introduced by \cite{fay79} is build on a sampling model:
+%
+\[\directStat_{\indexDomain} = \trueStat_{\indexDomain} + \samplingError_{\indexDomain},\]
+%
+where $\directStat_{\indexDomain}$ is a direct estimator of a statistic of interest $\trueStat_{\indexDomain}$ for an area $\indexDomain$ with $\indexDomain = 1, \dots, \nDomains$ and $\nDomains$ being the total number of areas. The sampling error $\samplingError_{\indexDomain}$ is assumed to be independent and normally distributed with known variances $\samplingVarianceIndexed$, i.e. $\samplingError_{\indexDomain}|\trueStat_{\indexDomain} \sim \mathit{N}(0, \samplingVarianceIndexed)$. The model is modified with the linking model by assuming a linear relationship between the true area statistic $\trueStat_{\indexDomain}$ and some auxiliary variables $\xArea$:
+%
+\[\trueStat_{\indexDomain} = \xArea^\top \beta + \randomEffectIndexed,\] 
+%
+with $\indexDomain=1,\dots, \nDomains$. Note that $\xArea$ is a vector containing area-level (aggregated) information for $\nRegressor$ variables and $\beta$ is a vector ($1\times \nRegressor$) of regression coefficients describing the (linear) relationship. The model errors $\randomEffectIndexed$ are assumed to be independent and normally distributed, i.e. $\randomEffectIndexed \sim \mathit{N}(0, \randomEffectVariance)$. Furthermore $\samplingErrorIndexed$ and $\randomEffectIndexed$ are assumed to be independent. Combining the sampling and linking model leads to:
+\begin{equation}
+\label{eq:FH}
+\directStatIndexed = \xArea^\top \beta + \randomEffectIndexed + \samplingErrorIndexed.
+\end{equation} 
+%
+Model \ref{eq:FH} is effectively a random-intercept model where the distribution of the error term $\samplingErrorIndexed$ is heterogeneous and known. 
 
 \section{A simulation framework}
 
@@ -93,6 +109,12 @@ Figure \ref{fig:flowdiagram} illustrates the steps in a simulation. Based on a d
 Introducing a simulation study as a data manipulation process. From data generation to estimating models. How can this process be mapped into the \proglang{R}-language. Present the simulation phases as flow-diagram and map the function names to the problem domain. Defining interfaces between phases: \proglang{data.frame} in, \proglang{data.frame} out. What is the difference between a design-based (fixed-population) and model-based (random-population) approach. 
 
 Why is this package helping in terms of literate programming (code is written for humans not machines) and reproducible research? Package naming conventions. Use the \proglang{\%>\%} operator to compose simulation set-ups. Reuse defined scenarios to compose new scenarios: What is a contamination scenario? A standard scenario plus contamination:
+
+asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd 
+
+asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd 
+
+asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd 
 
 asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd asd 
 
@@ -118,17 +140,6 @@ There is an easy back-end to run simulations in parallel (in Windows with specia
 \end{Sinput}
 \end{Schunk}
 
-\section{Data generation}
-This is not a data generation tool. However, it supports some useful functions to add random variates to the data. Definition of outliers, see Rao (?) -- how is it addressed in the package. More than linear models, define any response with:
-\begin{Schunk}
-\begin{Sinput}
-> setup %>% sim_resp_eq(y = g(2 * x) + e)
-\end{Sinput}
-\end{Schunk}
-
-\section{Adding steps to a simulation}
-Is present in unit-level simulation studies. Draw with simple random sampling from the whole population or within cluster/domains. Specify the sample size as integer or fraction and add weights if necessary. Wrappers around \proglang{dplyr::sample\_n} and \proglang{dplyr::sample\_frac}.
-Adding user specified functions to the simulation process is what separates this package from a mere data generation tool. The interface is simple: Add functions with one argument which is the data at that moment and which return the modified data. I am not sure if this and the sampling section is necessary -- maybe it should just be summarized in the overview section...
 
 \section{Case study}
 

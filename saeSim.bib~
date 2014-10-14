@@ -74,15 +74,3 @@ url = "http://dx.doi.org/10.1214/12-STS395",
 volume = "28",
 year = "2013"
 }
-
-@article{battese1988,
-  title={An error-components model for prediction of county crop areas using survey and satellite data},
-  author={Battese, George E and Harter, Rachel M and Fuller, Wayne A},
-  journal={Journal of the American Statistical Association},
-  volume={83},
-  number={401},
-  pages={28--36},
-  year={1988},
-  publisher={Taylor \& Francis Group}
-}
-

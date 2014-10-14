@@ -4,11 +4,8 @@
 %% declarations for jss.cls %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%% additional packages
 \usepackage{wrapfig}
 \usepackage{graphicx}
-
-%% definitions of entities in formulae
 \include{mathOperators}
 
 %% almost as usual
@@ -100,12 +97,12 @@ where $\directStat_{\indexDomain}$ is a direct estimator of a statistic of inter
 %
 \[\trueStat_{\indexDomain} = \xArea^\top \beta + \randomEffectIndexed,\] 
 %
-with $\indexDomain=1,\dots, \nDomains$. Note that $\xArea$ is a vector containing area-level (aggregated) information for $\nRegressor$ variables and $\beta$ is a vector ($1\times \nRegressor$) of regression coefficients describing the (linear) relationship. The model errors $\randomEffectIndexed$ are assumed to be independent and normally distributed, i.e. $\randomEffectIndexed \sim \mathit{N}(0, \randomEffectVariance)$. Furthermore $\samplingErrorIndexed$ and $\randomEffectIndexed$ are assumed to be independent. Combining the sampling and linking model leads to:
+with $\indexDomain=1,\dots, \nDomains$. Note that $\xArea$ is a vector containing area-level (aggregated) information for $\nRegressor$ variables and $\beta$ is a vector ($1\times \nRegressor$) of regression coefficients describing the (linear) relationship. The model errors $\randomEffectIndexed$ are assumed to be independent and normally distributed, i.e. $\randomEffectIndexed \sim \mathit{N}(0, \randomEffectVariance)$ furthermore $\samplingErrorIndexed$ and $\randomEffectIndexed$ are assumed to be independent. Combining the sampling and linking model leads to:
 \begin{equation}
 \label{eq:FH}
 \directStatIndexed = \xArea^\top \beta + \randomEffectIndexed + \samplingErrorIndexed.
 \end{equation} 
-%
+
 Model \ref{eq:FH} is effectively a random-intercept model where the distribution of the error term $\samplingErrorIndexed$ is heterogeneous and known. 
 
 \section{A simulation framework}
