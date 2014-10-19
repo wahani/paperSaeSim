@@ -43,6 +43,7 @@
   Url                      = {http://yihui.name/knitr/}
 }
 
+<<<<<<< HEAD
 @book{knuth92,
   Author = {Donald E. Knuth},
   Title = {Literate Programming},
@@ -74,3 +75,32 @@ url = "http://dx.doi.org/10.1214/12-STS395",
 volume = "28",
 year = "2013"
 }
+
+@article{battese1988,
+  title={An error-components model for prediction of county crop areas using survey and satellite data},
+  author={Battese, George E and Harter, Rachel M and Fuller, Wayne A},
+  journal={Journal of the American Statistical Association},
+  volume={83},
+  number={401},
+  pages={28--36},
+  year={1988},
+  publisher={Taylor \& Francis Group}
+}
+
+=======
+@Manual{wickham14,
+  title = {dplyr: A Grammar of Data Manipulation},
+  author = {Hadley Wickham and Romain Francois},
+  year = {2014},
+  note = {R package version 0.3.0.2},
+  url = {http://CRAN.R-project.org/package=dplyr}
+}
+
+@Manual{bache14,
+  title = {magrittr: magrittr - a forward-pipe operator for R},
+  author = {Stefan Milton Bache and Hadley Wickham},
+  year = {2014},
+  note = {R package version 1.0.1},
+  url = {http://CRAN.R-project.org/package=magrittr}
+}
+>>>>>>> b9458799a24f667e367625d711a903fc6487c3b0

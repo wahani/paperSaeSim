@@ -84,20 +84,21 @@ if(!suppressPackageStartupMessages(require(saeSim))) {
 \section{Introduction}
 The objective of small area estimation is to produce reliable statistics (means, quantiles, proportions, etc.) for domains where little or no sampled units are available. Groups may be areas or other entities, for example defined by socio-economic characteristics. New statistical methods are applied in model-based and design-based simulation studies. Considering the demands for reproducible research we propose a framework for simulation studies inside the field of small area estimation.
 
-Reproducible Research has become a widely discussed topic in general and also the field of statistics. Thanks to the many mostly open-source tools like the \proglang{R}-language \citep{r14} and \LaTeX, and also packages like knitr \citep{yihui13} and Sweave \citep{leisch02} and more recently rmarkdown \citep{allaire14}, the integration of text and source code for statistical analysis is possible. Not only are tools available to make research reproducible, also the demand of making the analysis of articles reproducible is rising which is supported by the rising number of Open Access Journals. Publishing source-code and data alongside an article draws special attention to authoring an analysis. However, the requirements for source code are different from the written words in the article itself. 
+Reproducible Research has become a widely discussed topic in general and also in the field of statistics. Thanks to the many mostly open-source tools like the \proglang{R}-language \citep{r14} and \LaTeX, and also packages like knitr \citep{yihui13} and Sweave \citep{leisch02} and more recently rmarkdown \citep{allaire14}, the integration of text and source code for statistical analysis is possible. Not only are tools available to make research reproducible, also the demand of making the analysis of articles reproducible is rising which is supported by the rising number of Open Access Journals. Publishing source-code and data alongside an article draws special attention to authoring an analysis. However, the requirements for source code are different from the written words in the article itself. 
 
 \begin{quote}
 \textit{Instead of imagining that our main task is to instruct a computer what to do, let us concentrate rather on explaining to human beings what we want a computer to do.} \cite[p.99]{knuth92} 
 \end{quote}
 
-In this article we want to introduce a new package for the \proglang{R}-language to support the process of making simulation studies reproducible as well as supporting a \textit{human-readable} interface. Three points in specific. First, making tools for data generation available and reusable. Second, unify the process behind simulation studies inside the field of Small Area Estimation. And third, making source-code of simulation studies available, such that it supports the conducted research in a transparent manner.
+In this article we want to introduce a new package for the \proglang{R}-language to support the process of making simulation studies reproducible as well as supporting a \textit{human-readable} interface. With this package we have three objectives in specific: First, making tools for data generation available and reusable. Second, unify the process behind simulation studies inside the field of Small Area Estimation. And third, making source-code of simulation studies available, such that it supports the conducted research in a transparent manner.
 
-We will show the importance of simulation studies in the field, introduce the simulation framework and demonstrate how to use the package to map the simulation as a process to \proglang{R}.
+In section \ref{sec:SAE} we will give a short introduction to small area estimation and the role of simulation studies within that field. Section \ref{sec:framework} will then introduce a framework for simulation studies and how it is supported by \proglang{saeSim}. To illustrate some of the package's features we present a case study in section \ref{sec:caseStudy}.
 
-\section{\label{cha} Small area estimation}
-The objective of small area estimation is to produce reliable statistics (means, quantiles, proportions, etc.) for domains where little or no sampled units are available. Groups may be areas or other entities, for example defined by socio-economic characteristics. The demand for such estimators is rising as they are used for fund allocation, educational and health programs \citep{pfeffermann13}. As direct estimation of such statistics are considered to be unreliable, methods in small area estimation try to improve the domain predictions by borrowing strength from neighboured or \textit{similar} domains. This can be achieved by using additional information from census data to assist the prediction for non-sampled or domains with little information. For the purpose of this article we will introduce two basic models frequently used in small area estimation, the unit-level model introduced by \cite{battese1988} and the area-level model introduced by \cite{fay79}.
+\section{Small area estimation}
+\label{sec:SAE}
+The objective of small area estimation is to produce reliable statistics (means, quantiles, proportions, etc.) for domains where little or no sampled units are available. Groups may be areas or other entities, for example defined by socio-economic characteristics. The demand for such estimators is rising as they are used for fund allocation, educational and health programs \citep{pfeffermann13}. As direct estimation of such statistics are considered to be unreliable, methods in small area estimation try to improve the domain predictions by borrowing strength from neighboured or \textit{similar} domains. This can be achieved by using additional information from census data to assist the prediction for non-sampled domains or domains with little information. For the purpose of this article we will introduce two basic models frequently used in small area estimation, the unit-level model introduced by \cite{battese1988} and the area-level model introduced by \cite{fay79}.
 
-As applications in small area estimations rely often on sensitive information unit-level information is not always available. Instead only aggregates, or rather the direct estimators are. In such situations area-level models are used. The area-level model introduced by \cite{fay79} is build on a sampling model:
+Due to reasons of confidentiality unit-level information is not always available. Instead only aggregates, or rather the direct estimators may be supplied. However, these direct estimations are known to be unreliable, hence in such situations area-level models can be valuable. The area-level model introduced by \cite{fay79} is build on a sampling model:
 %
 \[\directStat_{\indexDomain} = \trueStat_{\indexDomain} + \samplingError_{\indexDomain},\]
 %
@@ -114,6 +115,7 @@ with $\indexDomain=1,\dots, \nDomains$. Note that $\xArea$ is a vector containin
 Model \ref{eq:FH} is effectively a random-intercept model where the distribution of the error term $\samplingErrorIndexed$ is heterogeneous and known. 
 
 \section{A simulation framework}
+\label{sec:framework}
 %
 %% flow-diagram
 \begin{wrapfigure}{R}{0.5\textwidth}
@@ -157,6 +159,7 @@ setup1 %>% sim(R = 2) %>% sapply(nrow)
 With \proglang{saeSim} we want to contribute tools for simulation studies in the field of small area estimation. We see the need for sharing tools for data generation and simulation amongst the scientific community and thus defined an interface for these tools as well as designed a platform to make them accessible. By defining the steps behind a simulation we hope to promote a reasonable way to communicate them alongside publications and during research. In the next section we will present a case study and focus more on the concrete functionality provided by the package.
 
 \section{Case study}
+\label{sec:caseStudy}
 
 \section{Outlook}
 Use this package to share and publish simulation studies alongside papers. Contribute to the package to make your ideas available. Contribute to the package and make your whole simulation study available. 
