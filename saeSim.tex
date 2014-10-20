@@ -84,9 +84,18 @@ In section \ref{sec:SAE} we will give a short introduction to small area estimat
 
 \section{Small area estimation}
 \label{sec:SAE}
-The objective of small area estimation is to produce reliable statistics (means, quantiles, proportions, etc.) for domains where little or no sampled units are available. Groups may be areas or other entities, for example defined by socio-economic characteristics. The demand for such estimators is rising as they are used for fund allocation, educational and health programs \citep{pfeffermann13}. As direct estimation of such statistics are considered to be unreliable, methods in small area estimation try to improve the domain predictions by borrowing strength from neighboured or \textit{similar} domains. This can be achieved by using additional information from census data to assist the prediction for non-sampled domains or domains with little information. For the purpose of this article we will introduce two basic models frequently used in small area estimation, the unit-level model introduced by \cite{battese1988} and the area-level model introduced by \cite{fay79}.
+The objective of small area estimation is to produce reliable statistics (means, quantiles, proportions, etc.) for domains where little or no sampled units are available. Groups may be areas or other entities, for example defined by socio-economic characteristics. The demand for such estimators is rising as they are used for fund allocation, educational and health programs \citep{pfeffermann13}. As direct estimation of such statistics are considered to be unreliable, methods in small area estimation try to improve the domain predictions by borrowing strength from neighboured or \textit{similar} domains. This can be achieved by using additional information from census data to assist the prediction for non-sampled domains or domains with little information. For the purpose of this article we will introduce two basic models frequently used in small area estimation, the unit-level model introduced by \cite{battese88} and the area-level model introduced by \cite{fay79}.
 
-Due to reasons of confidentiality unit-level information is not always available. Instead only aggregates, or rather the direct estimators may be supplied. However, these direct estimations are known to be unreliable, hence in such situations area-level models are can be valuable. The area-level model introduced by \cite{fay79} is build on a sampling model:
+The unit level model \citep{battese88} can be expressed as:
+\begin{eqnarray}
+	 y_{\indexDomain\indexUnit} =& \xUnit^\top\beta + \randomEffectIndexed + \samplingErrorUnitIndexed \nonumber \\
+	\randomEffectIndexed \stackrel{iid}{\sim}& N(0, \randomEffectVariance)  \nonumber \\
+	\samplingErrorUnitIndexed \stackrel{iid}{\sim}& N(0, \samplingVariance) \nonumber
+\end{eqnarray}
+
+where $\indexDomain = 1, \dots, \nDomains$ and $\indexUnit = 1, \dots, \nUnitIndexed$. $y_{\indexDomain\indexUnit}$ is the the dependent variable for domain $\indexDomain$ and unit $\indexUnit$, and $\xUnit$ the corresponding auxiliary information for that unit. Furthermore $\randomEffect$ and $\samplingError$ are independent. This model can be seen as a linear mixed model from which the best linear unbiased predictor (BLUP) can be derived and is used for the domain prediction \citep{rao03}.
+
+Due to reasons of confidentiality unit-level information is not always available. Instead only aggregates, or rather the direct estimators may be supplied. However, these direct estimations are known to be unreliable, hence in such situations area-level models can be valuable. The area-level model introduced by \cite{fay79} is build on a sampling model:
 %
 \[\directStat_{\indexDomain} = \trueStat_{\indexDomain} + \samplingError_{\indexDomain},\]
 %
@@ -151,13 +160,223 @@ Without knowing anything about the setup defined in \proglang{sim\_base\_lm} we 
 \end{Soutput}
 \end{Schunk}
 
-With \proglang{saeSim} we want to contribute tools for simulation studies in the field of small area estimation. We see the need for sharing tools for data generation and simulation amongst the scientific community and thus defined an interface for these tools as well as designed a platform to make them accessible. By defining the steps behind a simulation we hope to promote a reasonable way to communicate them alongside publications and during research. In the next section we will present a case study and focus more on the concrete functionality provided by the package.
+With \proglang{saeSim} we want to contribute tools for simulation studies in the field of small area estimation. We see the need for sharing tools for data generation and simulation amongst the scientific community and thus defined an interface for these tools as well as a platform to make them accessible. By defining the steps behind a simulation we hope to promote a reasonable way to communicate them alongside publications and during research. In the next section we will present a case study and focus more on the concrete functionality provided by the package.
 
 \section{Case study}
 \label{sec:caseStudy}
+\subsection{Model-based simulation}
+\begin{Schunk}
+\begin{Sinput}
+> suppressPackageStartupMessages(library(saeSim))
+> suppressPackageStartupMessages(library(sae))
+> suppressPackageStartupMessages(library(dplyr))
+> suppressPackageStartupMessages(library(reshape2))
+> suppressPackageStartupMessages(library(ggplot2))
+> set.seed(1) # for reproduction of the results
+\end{Sinput}
+\end{Schunk}
 
+\begin{Schunk}
+\begin{Sinput}
+> comp_FH <- function(dat) {
++   # Computes the EBLUP under a Fay-Herriot model
++   modelFH <- eblupFH(y ~ x, vardir, data = dat, method = "FH")
++   dat$FH <- modelFH$eblup
++   dat
++ }
+\end{Sinput}
+\end{Schunk}
+
+\begin{Schunk}
+\begin{Sinput}
+> simResults <- base_id(nDomains = 40, nUnits = 1) %>% 
++   sim_gen_fe() %>%
++   sim_gen_re() %>% 
++   sim_gen(comp_var(vardir = seq(0.1, 4, length.out = 40))) %>%
++   sim_gen(comp_var(e = rnorm(nrow(dat), sd = sqrt(vardir)))) %>%
++   sim_resp_eq(y = 100 + 2 * x + v + e) %>%
++   sim_comp_agg(comp_var(trueStat = y - e)) %>%
++   sim_comp_agg(comp_FH) %>%
++   sim(R = 500) %>%
++   rbind_all
+\end{Sinput}
+\end{Schunk}
+
+\begin{Schunk}
+\begin{Sinput}
+> ggDat <- simResults %>% 
++   melt(id.vars = c("idD", "trueStat"), 
++        measure.vars = c("FH", "y"), 
++        variable.name = "method",
++        value.name = "prediction") %>% 
++   mutate(RBIAS = (prediction - trueStat)/trueStat,
++          RRMSE = (prediction - trueStat)^2/trueStat) %>%
++   group_by(idD, method) %>% 
++   summarise(RBIAS = mean(RBIAS),
++             RMSE = mean(RRMSE)) %>%
++   as.data.frame
+> head(ggDat)
+\end{Sinput}
+\begin{Soutput}
+  idD method         RBIAS         RMSE
+1   1     FH -0.0001326439 0.0009412468
+2   1      y -0.0001285281 0.0009413428
+3   2     FH  0.0002999555 0.0017042498
+4   2      y  0.0002214372 0.0018404586
+5   3     FH  0.0004056162 0.0027148056
+6   3      y  0.0003529474 0.0032745696
+\end{Soutput}
+\end{Schunk}
+
+
+\begin{Schunk}
+\begin{Sinput}
+> ggplot(ggDat, aes(y = RBIAS, x = method)) + geom_boxplot() + coord_flip()
+\end{Sinput}
+\end{Schunk}
+
+\includegraphics[width = \textwidth]{saeSim-modelSimBIAS.pdf}
+
+\begin{Schunk}
+\begin{Sinput}
+> ggplot(ggDat, aes(y = RMSE, x = method)) + geom_boxplot() + coord_flip()
+\end{Sinput}
+\end{Schunk}
+
+\includegraphics[width = \textwidth]{saeSim-modelSimRMSE.pdf}
+
+\subsection{Design-based simulation}
+\begin{Schunk}
+\begin{Sinput}
+> data(eusilcP, package = "simFrame")
+> simDat <- eusilcP %>% 
++   mutate(agesq = age^2, eqIncome = as.numeric(eqIncome)) %>%
++   filter(main) %>%
++   select(region, eqIncome, age, agesq, gender) %>%
++   base_add_id(c("region"))
+> attr(simDat, "popMeans") <- 
++   simDat %>% 
++   group_by(idD, region) %>%
++   summarise(age = mean(age),
++             agesq = mean(agesq),
++             genderFemale = mean(as.integer(gender) - 1),
++             trueStat = mean(eqIncome))
+> attr(simDat, "popN") <- 
++   simDat %>%
++   group_by(idD) %>%
++   summarise(N = n())
+> attr(simDat, "popN")
+\end{Sinput}
+\begin{Soutput}
+Source: local data frame [9 x 2]
+
+  idD    N
+1   1  799
+2   2 4619
+3   3 5857
+4   4 1723
+5   5 3386
+6   6 4071
+7   7 1671
+8   8 1889
+9   9  985
+\end{Soutput}
+\begin{Sinput}
+> attr(simDat, "popMeans")
+\end{Sinput}
+\begin{Soutput}
+Source: local data frame [9 x 6]
+Groups: idD
+
+  idD        region      age    agesq genderFemale trueStat
+1   1    Burgenland 54.50063 3269.677    0.3366708 22005.42
+2   2 Lower Austria 51.95259 3009.934    0.3777874 19813.37
+3   3        Vienna 46.98310 2486.448    0.4662797 20395.84
+4   4     Carinthia 51.81428 2995.735    0.3540337 19486.18
+5   5        Styria 50.64087 2886.845    0.3573538 19335.39
+6   6 Upper Austria 50.18644 2795.804    0.3443871 20517.29
+7   7      Salzburg 51.44943 2965.268    0.4189108 19890.33
+8   8         Tyrol 51.76707 2995.451    0.3975648 19350.89
+9   9    Vorarlberg 49.06904 2697.382    0.3583756 22156.12
+\end{Soutput}
+\begin{Sinput}
+> 
+\end{Sinput}
+\end{Schunk}
+
+\begin{Schunk}
+\begin{Sinput}
+> comp_BHF <- function(dat) {
++   popMeans <- attr(dat, "popMeans") %>% select(-trueStat, -region)
++   modelBHF <- 
++     eblupBHF(eqIncome ~ age + agesq + gender, idD, meanxpop = popMeans,
++              popnsize = attr(dat, "popN"), data = dat)
++   attr(dat, "BHF") <- modelBHF$eblup
++   dat
++ }
+> comp_direct <- function(dat) {
++   attr(dat, "sampleMean") <- 
++     dat %>% group_by(idD) %>% summarise(y = mean(eqIncome))
++   dat  
++ }
+> agg_results <- function(dat) {
++   cbind(attr(dat, "popMeans") %>% select(idD, region, trueStat), 
++         BHF = attr(dat, "BHF")$eblup,
++         y = attr(dat, "sampleMean")$y)
++ }
+\end{Sinput}
+\end{Schunk}
+
+\begin{Schunk}
+\begin{Sinput}
+> simResults <- simDat %>% 
++   sim_sample(sample_fraction(0.1, groupVars = "idD")) %>%
++   sim_comp_sample(comp_BHF) %>%
++   sim_comp_sample(comp_direct) %>%
++   sim_agg(agg_results) %>%
++   sim(R = 50) %>%
++   rbind_all
+> ggDat <- simResults %>% 
++   melt(id.vars = c("idD", "region", "trueStat"), 
++        measure.vars = c("BHF", "y"), 
++        variable.name = "method",
++        value.name = "prediction")
+\end{Sinput}
+\end{Schunk}
+
+\begin{Schunk}
+\begin{Sinput}
+> ggplot(ggDat, aes(x = region, y = prediction - trueStat, fill = method)) + 
++   geom_boxplot() + theme(legend.position = "bottom")
+\end{Sinput}
+\end{Schunk}
+
+\includegraphics[width = \textwidth]{saeSim-designSimBIAS.pdf}
+
+\begin{Schunk}
+\begin{Sinput}
+> ggplot(ggDat, aes(x = region, y = (prediction - trueStat)^2, fill = method)) + 
++   geom_boxplot() + scale_y_log10() + theme(legend.position = "bottom")
+\end{Sinput}
+\end{Schunk}
+
+\includegraphics[width = \textwidth]{saeSim-designSimMSE.pdf}
+  
+
+  
 \section{Outlook}
 Use this package to share and publish simulation studies alongside papers. Contribute to the package to make your ideas available. Contribute to the package and make your whole simulation study available. 
+\begin{itemize}
+	\item Link to simFrame
+	\item Package Features
+	\begin{itemize}
+		\item outliers
+		\item sampling
+		\item non-linear models
+	\end{itemize}
+	\item How to contribute?
+	\item parallel computations
+\end{itemize}
 
 
 %\bibliographystyle{plainat}
