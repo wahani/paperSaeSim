@@ -7,6 +7,7 @@
 %% additional packages
 \usepackage{wrapfig}
 \usepackage{graphicx}
+\usepackage{subcaption}
 
 %% definitions of entities in formulae
 \include{mathOperators}
@@ -138,8 +139,11 @@ Depending on the topic of research steps in this simulation framework can be mor
 
 From this considerations, \proglang{saeSim} maps the different steps into \proglang{R}. Two layers with separate responsibilities need to be discussed. The first is \textit{how} different simulation components can be combined, and the second \textit{when} or in which order they are applied. Regarding the first, in \proglang{saeSim} we put a special emphasis on the interface of each component, which is to use functions which take a \proglang{data.frame} as argument and have a \proglang{data.frame} as return value. This is a widely used approach for data manipulation and promoted recently in the package \proglang{dplyr} \citep{wickham14}. This definition of interfaces, the return value of one component is the input of the next, is also used in \proglang{saeSim}.
 
-Understanding a simulation as a process of manipulating one data object, see the second column in figure \ref{fig:flowdiagram} how the different steps in a simulation can be accessed. It is important to note that the functions in figure \ref{fig:flowdiagram} control the process, the second layer, i.e. \textit{when} components are applied. Each of these functions take a simulation setup object to be modified and a function with the discussed interface as arguments. Hence a simulation setup is a collection of functions to be applied in a certain sequence. As the first-layer functions, also have a defined interface: a \proglang{sim\_setup} as input to be modified and a \proglang{sim\_setup} as output. Thus, components can be chained together using the \textit{pipe operator} (\proglang{\%>\%}) from the package \proglang{magrittr} \citep{bache14}.
+Understanding a simulation as a process of manipulating one data object, see the second column in figure \ref{fig:flowdiagram} how the different steps in a simulation can be accessed. It is important to note that the functions in figure \ref{fig:flowdiagram} control the process, the second layer, i.e. \textit{when} components are applied. Each of these functions take a simulation setup object to be modified and a function with the discussed interface as arguments. Hence a simulation setup is a collection of functions to be applied in a certain sequence. Also the second-layer functions have a defined interface: a \proglang{sim\_setup} as input to be modified and a \proglang{sim\_setup} as output. Thus, components can be chained together using the \textit{pipe operator} (\proglang{\%>\%}) from the package \proglang{magrittr} \citep{bache14}.
 
+With \proglang{saeSim} we want to contribute tools for simulation studies in the field of small area estimation. We see the need for sharing tools for data generation and simulation amongst the scientific community and thus defined an interface for these tools as well as a platform to make them accessible. By defining the steps behind a simulation we hope to promote a reasonable way to communicate them alongside publications and during research. In the next section we will present a case study and focus more on the concrete functionality provided by the package.
+
+\section{Case study}
 Braking the responsibility into what is applied and when it is applied addresses several aspects of reproducibility. First, by defining the interface between all components, it is easy to combine them in any combination and thus easy to share and reuse. Second, by controlling when components are applied we avoid the necessity of control structures in syntax and emphasise on the definition of components. The following example shows these aspects of the package using a predefined simulation setup:
 
 \begin{Schunk}
@@ -160,92 +164,171 @@ Without knowing anything about the setup defined in \proglang{sim\_base\_lm} we 
 \end{Soutput}
 \end{Schunk}
 
-With \proglang{saeSim} we want to contribute tools for simulation studies in the field of small area estimation. We see the need for sharing tools for data generation and simulation amongst the scientific community and thus defined an interface for these tools as well as a platform to make them accessible. By defining the steps behind a simulation we hope to promote a reasonable way to communicate them alongside publications and during research. In the next section we will present a case study and focus more on the concrete functionality provided by the package.
-
-\section{Case study}
-\label{sec:caseStudy}
-\subsection{Model-based simulation}
-\begin{Schunk}
-\begin{Sinput}
-> suppressPackageStartupMessages(library(saeSim))
-> suppressPackageStartupMessages(library(sae))
-> suppressPackageStartupMessages(library(dplyr))
-> suppressPackageStartupMessages(library(reshape2))
-> suppressPackageStartupMessages(library(ggplot2))
-> set.seed(1) # for reproduction of the results
-\end{Sinput}
-\end{Schunk}
+As a side remark: The pipe operator, \proglang{\%>\%}, is designed to make otherwise nested expressions more readable as a line can be read from left to right, instead of inside out \citep{bache14}. As a minimal example see the following lines which are equivalent:
 
 \begin{Schunk}
 \begin{Sinput}
-> comp_FH <- function(dat) {
-+   # Computes the EBLUP under a Fay-Herriot model
-+   modelFH <- eblupFH(y ~ x, vardir, data = dat, method = "FH")
-+   dat$FH <- modelFH$eblup
-+   dat
-+ }
-\end{Sinput}
-\end{Schunk}
-
-\begin{Schunk}
-\begin{Sinput}
-> simResults <- base_id(nDomains = 40, nUnits = 1) %>% 
-+   sim_gen_fe() %>%
-+   sim_gen_re() %>% 
-+   sim_gen(comp_var(vardir = seq(0.1, 4, length.out = 40))) %>%
-+   sim_gen(comp_var(e = rnorm(nrow(dat), sd = sqrt(vardir)))) %>%
-+   sim_resp_eq(y = 100 + 2 * x + v + e) %>%
-+   sim_comp_agg(comp_var(trueStat = y - e)) %>%
-+   sim_comp_agg(comp_FH) %>%
-+   sim(R = 500) %>%
-+   rbind_all
-\end{Sinput}
-\end{Schunk}
-
-\begin{Schunk}
-\begin{Sinput}
-> ggDat <- simResults %>% 
-+   melt(id.vars = c("idD", "trueStat"), 
-+        measure.vars = c("FH", "y"), 
-+        variable.name = "method",
-+        value.name = "prediction") %>% 
-+   mutate(RBIAS = (prediction - trueStat)/trueStat,
-+          RRMSE = (prediction - trueStat)^2/trueStat) %>%
-+   group_by(idD, method) %>% 
-+   summarise(RBIAS = mean(RBIAS),
-+             RMSE = mean(RRMSE)) %>%
-+   as.data.frame
-> head(ggDat)
+> sum(1:10)
 \end{Sinput}
 \begin{Soutput}
-  idD method         RBIAS         RMSE
-1   1     FH -0.0001326439 0.0009412468
-2   1      y -0.0001285281 0.0009413428
-3   2     FH  0.0002999555 0.0017042498
-4   2      y  0.0002214372 0.0018404586
-5   3     FH  0.0004056162 0.0027148056
-6   3      y  0.0003529474 0.0032745696
+[1] 55
+\end{Soutput}
+\begin{Sinput}
+> 1:10 %>% sum
+\end{Sinput}
+\begin{Soutput}
+[1] 55
 \end{Soutput}
 \end{Schunk}
 
 
+\label{sec:caseStudy}
+\subsection{Model-based simulation}
+
+
+The first task for the model-based simulation is to generate the data under the model:
+
+\[ y_i = 100 + 2 \cdot x_i + v_i + e_i\]
+
+where $x_i \stackrel{iid}{\sim} N(0, 4^2)$, $v_i \stackrel{iid}{\sim} N(0, 1)$ and $e_i \stackrel{indep}{\sim} N(0, \sigma_i^2)$ with $\sigma_i^2 = 0.1, 0.2, \dots, 4$ and $i = 1, \dots, 40$ as index for the domains. Also are $x_i$, $v_i$ and $e_i$ independent from each other. The starting point is always a data table as \textit{base-component}, in this case just with an id variable named \proglang{idD} and constructed with the function \proglang{base\_id}. Any random number generator in \proglang{R} can be used, however we have a strictly \textit{normal} model, for which some predefined functions can be used.
+
 \begin{Schunk}
 \begin{Sinput}
-> ggplot(ggDat, aes(y = RBIAS, x = method)) + geom_boxplot() + coord_flip()
+> library(saeSim)
+\end{Sinput}
+\end{Schunk}
+\begin{Schunk}
+\begin{Sinput}
+> setup <- base_id(nDomains = 40, nUnits = 1) %>% 
++   sim_gen_x(mean = 0, sd = 4) %>%
++   sim_gen_v(mean = 0, sd = 1)
+> setup
+\end{Sinput}
+\begin{Soutput}
+  idD          x          v
+1   1 -2.5058152 -0.1645236
+2   2  0.7345733 -0.2533617
+3   3 -3.3425144  0.6969634
+4   4  6.3811232  0.5566632
+5   5  1.3180311 -0.6887557
+6   6 -3.2818735 -0.7074952
+\end{Soutput}
+\end{Schunk}
+
+Note that if you print a simulation setup to the console, as in the above example, one simulation run is performed and only the first rows of the resulting data table are printed. This enables interactivity with the object itself, however it hides that the setup object is a collection of functions to be called. The error component $e_i$ in the model has different variances which is not covered by a predefined function. Thus, as a \textit{generator} function we will define a function which takes a \proglang{data.frame} as input and returns it after adding a variable named \proglang{vardir} with the variances and the variable \proglang{e} with the generated random numbers:
+
+\begin{Schunk}
+\begin{Sinput}
+> gen_e <- function(dat) {
++   dat$vardir <- seq(0.1, 4, length.out = nrow(dat))
++   dat$e <- rnorm(nrow(dat), sd = sqrt(dat$vardir))
++   dat
++ }
+> setup <- setup %>% sim_gen(gen_e)
+> setup
+\end{Sinput}
+\begin{Soutput}
+  idD          x          v vardir          e
+1   1 -2.2746749 -0.5059575    0.1  0.1344285
+2   2 -0.5407145  1.3430388    0.2 -0.1067262
+3   3  4.7123480 -0.2145794    0.3  0.5797550
+4   4 -6.0942672 -0.1795565    0.4  0.5606229
+5   5  2.3757848 -0.1001907    0.5 -0.4378710
+6   6  1.3318015  0.7126663    0.6  1.7088396
+\end{Soutput}
+\end{Schunk}
+
+The last step in data generation is to construct the response variable which will be named \proglang{y} and added to the data. Also we will add the \textit{true} area statistic under the model to the data:
+
+\begin{Schunk}
+\begin{Sinput}
+> setup <- setup %>% 
++   sim_resp_eq(y = 100 + 2 * x + v + e) %>%
++   sim_comp_pop(comp_var(trueStat = y - e))
 \end{Sinput}
 \end{Schunk}
 
-\includegraphics[width = \textwidth]{saeSim-modelSimBIAS.pdf}
+Not all necessary functions can be provided by the package. As said before, one of the main objectives was to define the interface between components. To add the area-level predictions from a Fay-Herriot model we need to define a function for that. The function takes a \proglang{data.frame} as input and returns the modified version. Here we use the function \proglang{eblupFH} from the package \proglang{sae} \citep{molina13} to estimate the EBLUP under the FH model. Finally we add \proglang{comp\_FH} to the process:
 
 \begin{Schunk}
 \begin{Sinput}
-> ggplot(ggDat, aes(y = RMSE, x = method)) + geom_boxplot() + coord_flip()
+> library(sae)
 \end{Sinput}
 \end{Schunk}
+\begin{Schunk}
+\begin{Sinput}
+> comp_FH <- function(dat) {
++   modelFH <- eblupFH(y ~ x, vardir, data = dat)
++   dat$FH <- modelFH$eblup
++   dat
++ }
+> setup <- setup %>% sim_comp_agg(comp_FH)
+> setup
+\end{Sinput}
+\begin{Soutput}
+  idD         x          v vardir          e         y  trueStat        FH
+1   1  1.637607  0.7073107    0.1  0.1258998 104.10843 103.98253 104.06121
+2   2  6.755493  1.0341077    0.2 -0.1822523 114.36284 114.54509 114.23876
+3   3  6.346354  0.2234804    0.3  0.7253263 113.64151 112.91619 113.45213
+4   4 -1.323631 -0.8787076    0.4 -0.4434978  96.03053  96.47403  96.45416
+5   5 -9.140942  1.1629646    0.5 -0.4105563  82.47052  82.88108  82.46045
+6   6  9.990646 -2.0001649    0.6 -0.7754272 117.20570 117.98113 118.08379
+\end{Soutput}
+\end{Schunk}
 
-\includegraphics[width = \textwidth]{saeSim-modelSimRMSE.pdf}
+The object \proglang{setup} stores all necessary information to run one iteration of the simulation. To initialize more repetition, \proglang{sim} is called, which will return $R = 100$ (as the number of repetitions) \proglang{data.frame}s containing the simulated data from each iteration as a \proglang{list}. We use \proglang{rbind\_all} from the package \proglang{dplyr} to append the resulting \proglang{list}:
+
+\begin{Schunk}
+\begin{Sinput}
+> library(dplyr)
+\end{Sinput}
+\end{Schunk}
+\begin{Schunk}
+\begin{Sinput}
+> simResults <- sim(setup, R = 100) %>%rbind_all
+> simResults %>% select(idD, idR, trueStat, y, FH)
+\end{Sinput}
+\begin{Soutput}
+Source: local data frame [4,000 x 5]
+
+   idD idR  trueStat         y        FH
+1    1   1 107.87088 108.21065 108.30528
+2    2   1 113.29033 114.13809 113.80733
+3    3   1 105.88208 105.55180 105.63108
+4    4   1  84.61171  84.36450  84.63272
+5    5   1 103.68692 103.39260 103.42371
+6    6   1 104.26130 103.97032 103.79131
+7    7   1  97.85114  97.54439  97.43298
+8    8   1 101.93187 101.66741 101.49500
+9    9   1  92.51517  93.88300  93.67397
+10  10   1 104.07055 103.37302 104.01407
+.. ... ...       ...       ...       ...
+\end{Soutput}
+\end{Schunk}
+
+An additional variable \proglang{idR} is automatically added as an ID-variable for the iteration. At this time we do not provide further tools to process the resulting data. As it is a \proglang{data.frame} many packages for processing that data are available in \proglang{R}, in this case \proglang{dplyr} \citep{wickham14} and \proglang{reshape2} \citep{wickham07} have been used. The Rmd-file for this article can be checked for further detail, thus we do not see need to provide further tools from here on.
+
+
+
+
+\begin{figure}[h!]
+\begin{subfigure}{.5\textwidth}
+\centering
+\includegraphics[width=.9\linewidth]{saeSim-modelSimBIAS.pdf}
+\caption{}
+\end{subfigure}
+\begin{subfigure}{.5\textwidth}
+\centering
+\includegraphics[width=.9\linewidth]{saeSim-modelSimRMSE.pdf}
+\caption{}
+\end{subfigure}
+\caption{RBIAS and RMSE for the conducted model-based simulation}
+\end{figure}
 
 \subsection{Design-based simulation}
+
+In the design-based simulation we want to illustrate the use of \proglang{saeSim} when starting from data of a population. For this purpose we use a synthetic population generated from Austrian EU-SILC (European Union Statistics on Income and Living Conditions) data. We use this data to illustrate the functionality of the package, the data consists of 25 thousand households and does not represent the true population size of Austria. It is published alongside the \proglang{R}-package \proglang{simFrame} \citep{alfons10} where it is used as example data.
+
 \begin{Schunk}
 \begin{Sinput}
 > data(eusilcP, package = "simFrame")
