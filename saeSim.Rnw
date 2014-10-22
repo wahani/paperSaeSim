@@ -395,6 +395,7 @@ ggplot(ggDat, aes(x = region, y = (prediction - trueStat)^2, fill = method)) +
 
   
 \section{Outlook}
+With \proglang{saeSim} have three objects, making simulation tools available and reusable, unify the process behind simulations and third assist the researcher to design her code in a transparent way. By providing the package we not only want to make our own tools available but also open it for contributions. The package source is available on CRAN \url{somewhere} and the repository for development at \utl{https://github.com/wahani/saeSim} where tools may be submitted. Apart from the availability of specific utility functions, we hope to promote and support the design of source code for simulation studies. One aspect is the design of simulations as processes of data, which changes the 
 Use this package to share and publish simulation studies alongside papers. Contribute to the package to make your ideas available. Contribute to the package and make your whole simulation study available. 
 \begin{itemize}
 	\item Link to simFrame
