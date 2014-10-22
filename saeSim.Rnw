@@ -83,17 +83,38 @@ if(!suppressPackageStartupMessages(require(saeSim))) {
 @
 %
 \section{Introduction}
-The objective of small area estimation is to produce reliable statistics (means, quantiles, proportions, etc.) for domains where little or no sampled units are available. Groups may be areas or other entities, for example defined by socio-economic characteristics. New statistical methods are applied in model-based and design-based simulation studies. Considering the demands for reproducible research we propose a framework for simulation studies inside the field of small area estimation.
+The demand for reliable small area statistics from sample surveys has been substantial grown over the last decades due to their use in public and private sectors. In this paper we present a framework for simulation studies inside the field of small area estimation. This tool might be useful for the prospective researcher or data analyst to provide reproducible research.  
 
-Reproducible Research has become a widely discussed topic in general and also in the field of statistics. Thanks to the many mostly open-source tools like the \proglang{R}-language \citep{r14} and \LaTeX, and also packages like knitr \citep{yihui13} and Sweave \citep{leisch02} and more recently rmarkdown \citep{allaire14}, the integration of text and source code for statistical analysis is possible. Not only are tools available to make research reproducible, also the demand of making the analysis of articles reproducible is rising which is supported by the rising number of Open Access Journals. Publishing source-code and data alongside an article draws special attention to authoring an analysis. However, the requirements for source code are different from the written words in the article itself. 
+Reproducible research has become a widely discussed topic in many academic areas. For instance in the field of statistics, many mostly open-source tools like the \proglang{R}-language \citep{r14} and \LaTeX, dynamic reporting packages like \proglang{knitr} \citep{yihui13}, \proglang{sweave} \citep{leisch02} and more recently \proglang{rmarkdown} \citep{allaire14}, make the integration of text and source code for statistical analysis possible. Publishing source-code and data alongside in an article draws special attention to authoring the analysis. However, the requirements for source code are different from the written words in the article itself. 
 
 \begin{quote}
 \textit{Instead of imagining that our main task is to instruct a computer what to do, let us concentrate rather on explaining to human beings what we want a computer to do.} \cite[p.99]{knuth92} 
-\end{quote}
+\end{quote} 
 
-In this article we want to introduce a new package for the \proglang{R}-language to support the process of making simulation studies reproducible as well as supporting a \textit{human-readable} interface. With this package we have three objectives in specific: First, making tools for data generation available and reusable. Second, unify the process behind simulation studies inside the field of Small Area Estimation. And third, making source-code of simulation studies available, such that it supports the conducted research in a transparent manner.
+Next to the combination of text and source code, reproducible research aims that the full output of the academic research which is the paper combined with the full computational environment like data and source code, is available. However, real data is often very sensitive and governed by strictly confidentiality rules. Synthetic data generation mechanisms \citep{Kol11} can be used to provide safe data which is publicly available to enable the community to reproduce the analysis and results. \cite{Bur14} interpreted this as an open research philosophy. Such synthetic data sets can be used to test newly proposed statistical methods in a close-to-reality framework/ simulation. This may provide valuable insights about the quality of the introduced methods in a controlled environment under different scenarios. In general, statistical simulation studies are divided in the literature into two concepts:
+\begin{itemize}
+\item Design-based: The simulation study is based on true or synthetic data of a fixed population. Then, samples are selected repeatedly from the underlying finite population and different estimation methods are applied in each replication. The obtained estimates are compared to the true values of the population, for instance, in terms of relative bias (RB) or relative root mean squared error (RRMSE).
+\item Model-based: The simulation study uses data drawn from certain distributions. In each iteration, the population is generated from a model and a sample is selected according to a specific sampling scheme. The sample is used to estimate the quantity of interest and quality measures (like RB and RRMSE) are derived.  
+\end{itemize}
+Further discussion regarding model- and design-based simulations is available in \cite{Mue03}, \cite{Sal10} or \cite{Alf10}.
 
-In section \ref{sec:SAE} we will give a short introduction to small area estimation and the role of simulation studies within that field. Section \ref{sec:framework} will then introduce a framework for simulation studies and how it is supported by \proglang{saeSim}. To illustrate some of the package's features we present a case study in section \ref{sec:caseStudy}.
+However, simulation studies are often presented very briefly in academic articles without providing enough details about the underlying structure of the study. \cite{Alf10} provide a framework (\proglang{simFrame}) which helps the prospective researcher or data analyst to conduct simulation studies in a reproducible environment. The \proglang{R}-package \proglang{simFrame} \citep{Alf10} is an object-oriented tool for statistical simulation studies based on \proglang{S}4 classes. It includes a wide range of different features (like data generation, sampling schemes, outlier contamination mechanisms and missing values) to conduct simulation studies. \proglang{simFrame} was originally developed for simulations in the context of survey statistics but is now designed to be as general as possible \citep[cf.][]{Alf10}.
+
+Survey statistics are used, for example, in order to deliver specific indicators as a basis for economic and political decision processes. Especially regional or group-specific comparisons are of interest \citep[cf.][]{Sch13}. Surveys which shall provide the sufficient data for these regional indicators, however, are generally designed for larger areas (NUTS 1-2 level). Hence, sample information on more detailed levels, like NUTS3, is hardly available so that classical estimation methods (direct estimators) may lead to high variances of the estimates \citep[cf.][]{Gho94}. In this case, small area estimation methods may reveal highly improved results for the target estimates. Small area estimation has become more and more attractive over the last decade: 
+
+\begin{quote}
+\textit{In 2002, small area estimation (SAE) was flourishing both in research and applications, but my own feeling then was that the topic has been more or less exhausted in terms of research and that it will just turn into a routine application in sample survey practice. As the past 9 years show, I was completely wrong; not only is the research in this area accelerating, but it now involves some of the best known statisticians...} \cite{pfeffermann13} 
+\end{quote} 
+
+However, the empirical part is also often presented very briefly in the context of small area estimation. Thus, there is a need to have a suited framework to guarantee the reproducibility of analysis. To the best of our knowledge, there is not any \proglang{R}-package or framework adjusted for the special case of small area estimation which provides a simulation environment.
+
+The aim of this article is to inform the prospective researcher or data analyst of a new \proglang{R}-package (\proglang{simFrame}) which supports the process of making simulation studies reproducible and offers a \textit{human-readable} interface in the field of small area estimation. To be more precise, the package has three main objectives: First, provide tools for data generation which are reproducible. Second, unify the process of simulation studies. Third, make the source-code of simulation studies available, such that it supports the conducted research in a transparent manner.
+
+The paper is organised as follows. In Section \ref{sec:SAE} we give a short introduction to small area estimation focusing mainly on unit-level \citep{battese88} and area-level models \citep{fay79}. Section \ref{sec:framework} introduces a framework for simulation studies and how it is supported by the  \proglang{R}-package \proglang{saeSim}. To illustrate some of the features of the package we present a case study in Section \ref{sec:caseStudy}. We conclude the paper in Section \ref{sec:outlook} by summarising the main findings and by providing some avenues for further research.
+
+\textcolor{red}{SONSTIGER TEXT:
+The objective of small area estimation is to produce reliable statistics (means, quantiles, proportions, etc.) for domains where little or no sampled units are available. Groups may be areas or other entities, for example defined by socio-economic characteristics. New statistical methods are applied in model-based and design-based simulation studies. Considering the demands for reproducible research we propose a framework for simulation studies inside the field of small area estimation.}
+
 
 \section{Small area estimation}
 \label{sec:SAE}
@@ -247,47 +268,47 @@ simResults %>% select(idD, idR, simName, trueStat, y, FH)
 
 An additional variable \proglang{idR} is automatically added as an ID-variable for the iteration as well as a variable \proglang{simName} which purpose is to distinguish between scenarios, should there be more than one. At this time we do not provide further tools to process the resulting data. As it is a \proglang{data.frame} many packages for processing that data are available in \proglang{R}, in this case \proglang{dplyr} \citep{wickham14} and \proglang{reshape2} \citep{wickham07} have been used. The Rmd-file for this article can be checked for further detail, thus we do not see need to provide further tools from here on.
 
-<<echo=FALSE>>=
-library(reshape2)
-library(ggplot2)
-ggDat <- simResults %>% 
-  melt(id.vars = c("idD", "trueStat"), 
-       measure.vars = c("FH", "y"), 
-       variable.name = "method",
-       value.name = "prediction") %>% 
-  mutate(RBIAS = (prediction - trueStat)/trueStat,
-         RRMSE = (prediction - trueStat)^2/trueStat) %>%
-  group_by(idD, method) %>% 
-  summarise(RBIAS = mean(RBIAS),
-            RMSE = mean(RRMSE)) %>%
-  as.data.frame
-@
+%<<echo=FALSE>>=
+%library(reshape2)
+%library(ggplot2)
+%ggDat <- simResults %>% 
+%  melt(id.vars = c("idD", "trueStat"), 
+%       measure.vars = c("FH", "y"), 
+%       variable.name = "method",
+%       value.name = "prediction") %>% 
+%  mutate(RBIAS = (prediction - trueStat)/trueStat,
+%         RRMSE = (prediction - trueStat)^2/trueStat) %>%
+%  group_by(idD, method) %>% 
+%  summarise(RBIAS = mean(RBIAS),
+%            RMSE = mean(RRMSE)) %>%
+%  as.data.frame
+%@
+%
+%<<modelSimBIAS, echo = FALSE, fig=TRUE, width = 4, height=4, include=FALSE>>=
+%ggplot(ggDat, aes(y = RBIAS, x = method)) + geom_boxplot() + coord_flip()
+%@
+%
+%<<modelSimRMSE, echo = FALSE, fig=TRUE, width = 4, height=4, include=FALSE>>=
+%ggplot(ggDat, aes(y = RMSE, x = method)) + geom_boxplot() + coord_flip()
+%@
 
-<<modelSimBIAS, echo = FALSE, fig=TRUE, width = 4, height=4, include=FALSE>>=
-ggplot(ggDat, aes(y = RBIAS, x = method)) + geom_boxplot() + coord_flip()
-@
-
-<<modelSimRMSE, echo = FALSE, fig=TRUE, width = 4, height=4, include=FALSE>>=
-ggplot(ggDat, aes(y = RMSE, x = method)) + geom_boxplot() + coord_flip()
-@
-
-\begin{figure}[h!]
-\begin{subfigure}{.5\textwidth}
-\centering
-\includegraphics[width=.9\linewidth]{saeSim-modelSimBIAS.pdf}
-\caption{}
-\end{subfigure}
-\begin{subfigure}{.5\textwidth}
-\centering
-\includegraphics[width=.9\linewidth]{saeSim-modelSimRMSE.pdf}
-\caption{}
-\end{subfigure}
-\caption{RBIAS and RMSE for the conducted model-based simulation}
-\end{figure}
+%\begin{figure}[h!]
+%\begin{subfigure}{.5\textwidth}
+%\centering
+%\includegraphics[width=.9\linewidth]{saeSim-modelSimBIAS.pdf}
+%\caption{}
+%\end{subfigure}
+%\begin{subfigure}{.5\textwidth}
+%\centering
+%\includegraphics[width=.9\linewidth]{saeSim-modelSimRMSE.pdf}
+%\caption{}
+%\end{subfigure}
+%\caption{RBIAS and RMSE for the conducted model-based simulation}
+%\end{figure}
 
 \subsection{Design-based simulation}
 
-In the design-based simulation we want to illustrate the use of \proglang{saeSim} when starting from data of a population. For this purpose we use a synthetic population generated from Austrian EU-SILC (European Union Statistics on Income and Living Conditions) data. We use this data to illustrate the functionality of the package, the data consists of 25 thousand households and does not represent the true population size of Austria. It is published alongside the \proglang{R}-package \proglang{simFrame} \citep{alfons10} where it is used as example data. To keep this study as simple as possible, we further restrict the data for the main income holder and will only use some of the provided auxiliary information.
+In the design-based simulation we want to illustrate the use of \proglang{saeSim} when starting from data of a population. For this purpose we use a synthetic population generated from Austrian EU-SILC (European Union Statistics on Income and Living Conditions) data. We use this data to illustrate the functionality of the package, the data consists of 25 thousand households and does not represent the true population size of Austria. It is published alongside the \proglang{R}-package \proglang{simFrame} \citep{Alf10} where it is used as example data. To keep this study as simple as possible, we further restrict the data for the main income holder and will only use some of the provided auxiliary information.
 
 <<>>=
 data(eusilcP, package = "simFrame")
@@ -371,6 +392,7 @@ simResults
 @
 
 To further process the simulation results we present two graphics, using the package \proglang{ggplot2} \citep{wickham09} and \proglang{reshape2} \citep{wickham07}. 
+
 <<>>=
 ggDat <- melt(simResults,
               id.vars = c("region", "trueStat"), 
@@ -395,21 +417,27 @@ ggplot(ggDat, aes(x = region, y = (prediction - trueStat)^2, fill = method)) +
 
   
 \section{Outlook}
-With \proglang{saeSim} have three objects, making simulation tools available and reusable, unify the process behind simulations and third assist the researcher to design her code in a transparent way. By providing the package we not only want to make our own tools available but also open it for contributions. The package source is available on CRAN \url{somewhere} and the repository for development at \utl{https://github.com/wahani/saeSim} where tools may be submitted. Apart from the availability of specific utility functions, we hope to promote and support the design of source code for simulation studies. One aspect is the design of simulations as processes of data, which changes the 
-Use this package to share and publish simulation studies alongside papers. Contribute to the package to make your ideas available. Contribute to the package and make your whole simulation study available. 
+\label{sec:outlook}
+With \proglang{saeSim} have three objects, making simulation tools available and reusable, unify the process behind simulations and third assist the researcher to design her code in a transparent way. By providing the package we not only want to make our own tools available but also open it for contributions. The package source is available on CRAN \url{somewhere} and the repository for development at \url{https://github.com/wahani/saeSim}. As GitHub allows to share and contribute source code using version control, it is open for submissions. Apart from the availability of specific utility functions, we hope to promote and support the design of source code for simulation studies. One aspect is the design of simulations as processes of data. Furthermore by supporting the definition of small and self contained components, i.e. functions, as this reduces the lines of code to be read in order to understand it's purpose. 
+
+The package already provides more than introduced in this article and likewise some tools are still missing. The support of outlier contaminated data. At this time only representative outliers (outlying observations in the population) are supported. However, we plan to extend this approach for non-representative outliers (outliers are part of the sample but not the population). The inclusion of available random numbers from the R-language is already possible and supports easy access to generate group effects as needed in mixed models. As the response is created by an \proglang{R} expression, any form of non-linearity in the relationship between response and auxiliary variables and errors can be introduced.
+
+A more technical feature is a back-end for parallel computations which is a link to the \proglang{parallel} package in \proglang{R}. Still missing but maybe helpful are tools to process the data after the simulation as well as plotting methods for that data. Already available are some simple plots for the simulation setups as well as a summary method, to get information on the expected run time and structure of the resulting data.
+
+
 \begin{itemize}
-	\item Link to simFrame
-	\item Package Features
-	\begin{itemize}
-		\item outliers
-		\item sampling
-		\item non-linear models
-	\end{itemize}
-	\item How to contribute?
+	\item Link to simFrame?
 	\item parallel computations
 	\item Process the results of a simulation
 \end{itemize}
 
+\section{TODO}
+\begin{itemize}
+	\item Chapter 3 + 4 - what will happen in these chapters?
+	\item kein RBIAS + RRMSE in model-based
+	\item Einleitung 4.2 was ist das ziel der design-basierten simulation
+	\item Conclusion
+\end{itemize}
 
 %\bibliographystyle{plainat}
 \bibliography{saeSim}
