@@ -276,7 +276,7 @@ Not all necessary functions can be provided by the package. As said before, one 
 \end{Soutput}
 \end{Schunk}
 
-The object \proglang{setup} stores all necessary information to run one iteration of the simulation. To initialize more repetition, \proglang{sim} is called, which will return $R = 100$ (as the number of repetitions) \proglang{data.frame}s containing the simulated data from each iteration as a \proglang{list}. We use \proglang{rbind\_all} from the package \proglang{dplyr} to append the resulting \proglang{list}:
+The object \proglang{setup} stores all necessary information to run one iteration of the simulation. To start more repetitions, \proglang{sim} is called, which will return $R = 100$ (as the number of repetitions) \proglang{data.frame}s containing the simulated data from each iteration as a \proglang{list}. We use \proglang{rbind\_all} from the package \proglang{dplyr} to append the resulting \proglang{list}:
 
 \begin{Schunk}
 \begin{Sinput}
@@ -285,28 +285,28 @@ The object \proglang{setup} stores all necessary information to run one iteratio
 \end{Schunk}
 \begin{Schunk}
 \begin{Sinput}
-> simResults <- sim(setup, R = 100) %>%rbind_all
-> simResults %>% select(idD, idR, trueStat, y, FH)
+> simResults <- sim(setup, R = 100) %>% rbind_all
+> simResults %>% select(idD, idR, simName, trueStat, y, FH)
 \end{Sinput}
 \begin{Soutput}
-Source: local data frame [4,000 x 5]
+Source: local data frame [4,000 x 6]
 
-   idD idR  trueStat         y        FH
-1    1   1 107.87088 108.21065 108.30528
-2    2   1 113.29033 114.13809 113.80733
-3    3   1 105.88208 105.55180 105.63108
-4    4   1  84.61171  84.36450  84.63272
-5    5   1 103.68692 103.39260 103.42371
-6    6   1 104.26130 103.97032 103.79131
-7    7   1  97.85114  97.54439  97.43298
-8    8   1 101.93187 101.66741 101.49500
-9    9   1  92.51517  93.88300  93.67397
-10  10   1 104.07055 103.37302 104.01407
-.. ... ...       ...       ...       ...
+   idD idR simName  trueStat         y        FH
+1    1   1         107.87088 108.21065 108.30528
+2    2   1         113.29033 114.13809 113.80733
+3    3   1         105.88208 105.55180 105.63108
+4    4   1          84.61171  84.36450  84.63272
+5    5   1         103.68692 103.39260 103.42371
+6    6   1         104.26130 103.97032 103.79131
+7    7   1          97.85114  97.54439  97.43298
+8    8   1         101.93187 101.66741 101.49500
+9    9   1          92.51517  93.88300  93.67397
+10  10   1         104.07055 103.37302 104.01407
+.. ... ...     ...       ...       ...       ...
 \end{Soutput}
 \end{Schunk}
 
-An additional variable \proglang{idR} is automatically added as an ID-variable for the iteration. At this time we do not provide further tools to process the resulting data. As it is a \proglang{data.frame} many packages for processing that data are available in \proglang{R}, in this case \proglang{dplyr} \citep{wickham14} and \proglang{reshape2} \citep{wickham07} have been used. The Rmd-file for this article can be checked for further detail, thus we do not see need to provide further tools from here on.
+An additional variable \proglang{idR} is automatically added as an ID-variable for the iteration as well as a variable \proglang{simName} which purpose is to distinguish between scenarios, should there be more than one. At this time we do not provide further tools to process the resulting data. As it is a \proglang{data.frame} many packages for processing that data are available in \proglang{R}, in this case \proglang{dplyr} \citep{wickham14} and \proglang{reshape2} \citep{wickham07} have been used. The Rmd-file for this article can be checked for further detail, thus we do not see need to provide further tools from here on.
 
 
 
@@ -327,7 +327,7 @@ An additional variable \proglang{idR} is automatically added as an ID-variable f
 
 \subsection{Design-based simulation}
 
-In the design-based simulation we want to illustrate the use of \proglang{saeSim} when starting from data of a population. For this purpose we use a synthetic population generated from Austrian EU-SILC (European Union Statistics on Income and Living Conditions) data. We use this data to illustrate the functionality of the package, the data consists of 25 thousand households and does not represent the true population size of Austria. It is published alongside the \proglang{R}-package \proglang{simFrame} \citep{alfons10} where it is used as example data.
+In the design-based simulation we want to illustrate the use of \proglang{saeSim} when starting from data of a population. For this purpose we use a synthetic population generated from Austrian EU-SILC (European Union Statistics on Income and Living Conditions) data. We use this data to illustrate the functionality of the package, the data consists of 25 thousand households and does not represent the true population size of Austria. It is published alongside the \proglang{R}-package \proglang{simFrame} \citep{alfons10} where it is used as example data. To keep this study as simple as possible, we further restrict the data for the main income holder and will only use some of the provided auxiliary information.
 
 \begin{Schunk}
 \begin{Sinput}
@@ -335,95 +335,170 @@ In the design-based simulation we want to illustrate the use of \proglang{saeSim
 > simDat <- eusilcP %>% 
 +   mutate(agesq = age^2, eqIncome = as.numeric(eqIncome)) %>%
 +   filter(main) %>%
-+   select(region, eqIncome, age, agesq, gender) %>%
-+   base_add_id(c("region"))
-> attr(simDat, "popMeans") <- 
-+   simDat %>% 
-+   group_by(idD, region) %>%
++   select(region, eqIncome, age, agesq, gender)
+> head(simDat)
+\end{Sinput}
+\begin{Soutput}
+         region eqIncome age agesq gender
+1 Upper Austria 11128.45  25   625   male
+2        Styria 19694.85  53  2809   male
+3        Styria  5066.24  30   900 female
+4 Upper Austria 31480.01  32  1024   male
+5        Vienna 17813.40  77  5929 female
+6 Lower Austria 13501.53  35  1225   male
+\end{Soutput}
+\end{Schunk}
+
+For the purpose of the design-based case study we want to apply the earlier introduced BHF estimator which is implemented in the \proglang{R}-package \proglang{sae} \citep{molina13}. The function we use, \proglang{eblupBHF}, expects three data objects to produce the predictions. The sampled data, the population means of the auxiliary variables and the population sizes in each domain. To store these informations and make them available during the simulation we attach them as attributes to the population data. There are other options but setting attributes to the processed data is supported in the package and presents a very flexible form of processing data on different aggregation levels. 
+
+\begin{Schunk}
+\begin{Sinput}
+> attr(simDat, "popMeans") <- group_by(simDat, region) %>% 
 +   summarise(age = mean(age),
 +             agesq = mean(agesq),
 +             genderFemale = mean(as.integer(gender) - 1),
 +             trueStat = mean(eqIncome))
-> attr(simDat, "popN") <- 
-+   simDat %>%
-+   group_by(idD) %>%
-+   summarise(N = n())
+> attr(simDat, "popMeans")
+\end{Sinput}
+\begin{Soutput}
+Source: local data frame [9 x 5]
+
+         region      age    agesq genderFemale trueStat
+1    Burgenland 54.50063 3269.677    0.3366708 22005.42
+2 Lower Austria 51.95259 3009.934    0.3777874 19813.37
+3        Vienna 46.98310 2486.448    0.4662797 20395.84
+4     Carinthia 51.81428 2995.735    0.3540337 19486.18
+5        Styria 50.64087 2886.845    0.3573538 19335.39
+6 Upper Austria 50.18644 2795.804    0.3443871 20517.29
+7      Salzburg 51.44943 2965.268    0.4189108 19890.33
+8         Tyrol 51.76707 2995.451    0.3975648 19350.89
+9    Vorarlberg 49.06904 2697.382    0.3583756 22156.12
+\end{Soutput}
+\begin{Sinput}
+> attr(simDat, "popN") <- group_by(simDat, region) %>% summarise(N = n())
 > attr(simDat, "popN")
 \end{Sinput}
 \begin{Soutput}
 Source: local data frame [9 x 2]
 
-  idD    N
-1   1  799
-2   2 4619
-3   3 5857
-4   4 1723
-5   5 3386
-6   6 4071
-7   7 1671
-8   8 1889
-9   9  985
+         region    N
+1    Burgenland  799
+2 Lower Austria 4619
+3        Vienna 5857
+4     Carinthia 1723
+5        Styria 3386
+6 Upper Austria 4071
+7      Salzburg 1671
+8         Tyrol 1889
+9    Vorarlberg  985
 \end{Soutput}
-\begin{Sinput}
-> attr(simDat, "popMeans")
-\end{Sinput}
-\begin{Soutput}
-Source: local data frame [9 x 6]
-Groups: idD
-
-  idD        region      age    agesq genderFemale trueStat
-1   1    Burgenland 54.50063 3269.677    0.3366708 22005.42
-2   2 Lower Austria 51.95259 3009.934    0.3777874 19813.37
-3   3        Vienna 46.98310 2486.448    0.4662797 20395.84
-4   4     Carinthia 51.81428 2995.735    0.3540337 19486.18
-5   5        Styria 50.64087 2886.845    0.3573538 19335.39
-6   6 Upper Austria 50.18644 2795.804    0.3443871 20517.29
-7   7      Salzburg 51.44943 2965.268    0.4189108 19890.33
-8   8         Tyrol 51.76707 2995.451    0.3975648 19350.89
-9   9    Vorarlberg 49.06904 2697.382    0.3583756 22156.12
-\end{Soutput}
-\begin{Sinput}
-> 
-\end{Sinput}
 \end{Schunk}
+
+Before we come to the estimation configuration, the first step is to add a sampling scheme. As stated earlier, the starting point of a simulation setup is to provide a \proglang{data.frame} as \textit{base-component} which, in this case, is the population data. Then the sampling component is added, in which we define to draw 10 per cent of the observations from each domain with simple random sampling.
 
 \begin{Schunk}
 \begin{Sinput}
+> setup <- simDat %>% 
++   sim_sample(sample_fraction(0.1, groupVars = "region"))
+> setup
+\end{Sinput}
+\begin{Soutput}
+      region eqIncome age agesq gender
+1 Burgenland 23572.28  67  4489   male
+2 Burgenland 24056.37  26   676   male
+3 Burgenland 21613.73  46  2116   male
+4 Burgenland 11750.30  40  1600   male
+5 Burgenland  9664.08  80  6400 female
+6 Burgenland 19369.91  63  3969 female
+\end{Soutput}
+\end{Schunk}
+
+What now needs to be done, is to define the components which add the desired estimates to the data. Here we will compute the mean of income in each domain as the direct estimator and the EBLUP under the BHF model. Although this could be done in one step, we will separate the two computations to illustrate how to combine several estimations and define each component independent of one another. This focus on the definition of each component and meeting the convention of the defined interface is the intended approach. It will automatically organise the simulation and each component is arranged using the simulation framework. Hence, we will define two functions, one for adding the direct estimates and one for adding the EBLUP.
+
+\begin{Schunk}
+\begin{Sinput}
+> comp_direct <- function(dat) {
++   attr(dat, "sampleMean") <- 
++     dat %>% group_by(region) %>% summarise(direct = mean(eqIncome))
++   dat
++ }
 > comp_BHF <- function(dat) {
-+   popMeans <- attr(dat, "popMeans") %>% select(-trueStat, -region)
++   popMeans <- select(attr(dat, "popMeans"), -trueStat)
 +   modelBHF <- 
-+     eblupBHF(eqIncome ~ age + agesq + gender, idD, meanxpop = popMeans,
++     eblupBHF(eqIncome ~ age + agesq + gender, region, meanxpop = popMeans,
 +              popnsize = attr(dat, "popN"), data = dat)
 +   attr(dat, "BHF") <- modelBHF$eblup
 +   dat
 + }
-> comp_direct <- function(dat) {
-+   attr(dat, "sampleMean") <- 
-+     dat %>% group_by(idD) %>% summarise(y = mean(eqIncome))
-+   dat  
-+ }
+\end{Sinput}
+\end{Schunk}
+
+Another positive aspect of the above definitions is, that each step is relatively small and the purpose clearly defined, which will make them easy to understand, modify and reproduce. Finally we will combine the simulation results in an \textit{aggregation-component}, possibly followed by the application of area-level models but skipped in this example. The result of this aggregation step will be a \proglang{data.frame} with one row for each region.
+
+\begin{Schunk}
+\begin{Sinput}
 > agg_results <- function(dat) {
-+   cbind(attr(dat, "popMeans") %>% select(idD, region, trueStat), 
++   cbind(attr(dat, "sampleMean"),
 +         BHF = attr(dat, "BHF")$eblup,
-+         y = attr(dat, "sampleMean")$y)
++         trueStat = attr(dat, "popMeans")$trueStat)
 + }
 \end{Sinput}
 \end{Schunk}
 
+To combine the simulation setup and the defined components we arrange them using the function \proglang{sim\_comp\_sample} to ensure that the direct estimator and the EBLUP is computed on the sampled data, and \proglang{sim\_agg} to add the above aggregation step.
+
 \begin{Schunk}
 \begin{Sinput}
-> simResults <- simDat %>% 
-+   sim_sample(sample_fraction(0.1, groupVars = "idD")) %>%
+> setup <- setup %>%
 +   sim_comp_sample(comp_BHF) %>%
 +   sim_comp_sample(comp_direct) %>%
-+   sim_agg(agg_results) %>%
-+   sim(R = 50) %>%
-+   rbind_all
-> ggDat <- simResults %>% 
-+   melt(id.vars = c("idD", "region", "trueStat"), 
-+        measure.vars = c("BHF", "y"), 
-+        variable.name = "method",
-+        value.name = "prediction")
++   sim_agg(agg_results)
+> setup
+\end{Sinput}
+\begin{Soutput}
+         region   direct      BHF trueStat
+1    Burgenland 21933.95 21255.53 22005.42
+2 Lower Austria 18885.08 19036.29 19813.37
+3        Vienna 20734.08 20720.48 20395.84
+4     Carinthia 19211.55 19377.21 19486.18
+5        Styria 18704.75 18955.96 19335.39
+6 Upper Austria 20636.94 20504.37 20517.29
+\end{Soutput}
+\end{Schunk}
+
+To repeat the simulation $R$ times the simulation setup can be passed to the function \proglang{sim}, the resulting \proglang{list} is directly combined using \proglang{rbind\_all}.
+
+\begin{Schunk}
+\begin{Sinput}
+> simResults <- setup %>% sim(R = 50) %>% rbind_all
+> simResults
+\end{Sinput}
+\begin{Soutput}
+Source: local data frame [450 x 6]
+
+          region   direct      BHF trueStat idR simName
+1     Burgenland 23083.61 20800.16 22005.42   1        
+2  Lower Austria 20414.91 20264.56 19813.37   1        
+3         Vienna 20756.78 20422.85 20395.84   1        
+4      Carinthia 19581.64 19912.42 19486.18   1        
+5         Styria 19443.11 19757.42 19335.39   1        
+6  Upper Austria 20417.38 20356.38 20517.29   1        
+7       Salzburg 19900.44 20009.83 19890.33   1        
+8          Tyrol 18493.29 19540.25 19350.89   1        
+9     Vorarlberg 21166.20 20444.35 22156.12   1        
+10    Burgenland 21340.42 20510.92 22005.42   2        
+..           ...      ...      ...      ... ...     ...
+\end{Soutput}
+\end{Schunk}
+
+To further process simulation results we present two graphics, using the package \proglang{ggplot2} \citep{wickham09} and \proglang{reshape2} \citep{wickham07} for 
+\begin{Schunk}
+\begin{Sinput}
+> ggDat <- melt(simResults,
++               id.vars = c("region", "trueStat"), 
++               measure.vars = c("BHF", "direct"), 
++               variable.name = "method",
++               value.name = "prediction")
 \end{Sinput}
 \end{Schunk}
 
@@ -444,7 +519,6 @@ Groups: idD
 \end{Schunk}
 
 \includegraphics[width = \textwidth]{saeSim-designSimMSE.pdf}
-  
 
   
 \section{Outlook}

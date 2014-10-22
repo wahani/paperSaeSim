@@ -241,11 +241,11 @@ The object \proglang{setup} stores all necessary information to run one iteratio
 library(dplyr)
 @
 <<>>=
-simResults <- sim(setup, R = 100) %>%rbind_all
-simResults %>% select(idD, idR, trueStat, y, FH)
+simResults <- sim(setup, R = 100) %>% rbind_all
+simResults %>% select(idD, idR, simName, trueStat, y, FH)
 @
 
-An additional variable \proglang{idR} is automatically added as an ID-variable for the iteration. At this time we do not provide further tools to process the resulting data. As it is a \proglang{data.frame} many packages for processing that data are available in \proglang{R}, in this case \proglang{dplyr} \citep{wickham14} and \proglang{reshape2} \citep{wickham07} have been used. The Rmd-file for this article can be checked for further detail, thus we do not see need to provide further tools from here on.
+An additional variable \proglang{idR} is automatically added as an ID-variable for the iteration as well as a variable \proglang{simName} which purpose is to distinguish between scenarios, should there be more than one. At this time we do not provide further tools to process the resulting data. As it is a \proglang{data.frame} many packages for processing that data are available in \proglang{R}, in this case \proglang{dplyr} \citep{wickham14} and \proglang{reshape2} \citep{wickham07} have been used. The Rmd-file for this article can be checked for further detail, thus we do not see need to provide further tools from here on.
 
 <<echo=FALSE>>=
 library(reshape2)
@@ -287,7 +287,7 @@ ggplot(ggDat, aes(y = RMSE, x = method)) + geom_boxplot() + coord_flip()
 
 \subsection{Design-based simulation}
 
-In the design-based simulation we want to illustrate the use of \proglang{saeSim} when starting from data of a population. For this purpose we use a synthetic population generated from Austrian EU-SILC (European Union Statistics on Income and Living Conditions) data. We use this data to illustrate the functionality of the package, the data consists of 25 thousand households and does not represent the true population size of Austria. It is published alongside the \proglang{R}-package \proglang{simFrame} \citep{alfons10} where it is used as example data.
+In the design-based simulation we want to illustrate the use of \proglang{saeSim} when starting from data of a population. For this purpose we use a synthetic population generated from Austrian EU-SILC (European Union Statistics on Income and Living Conditions) data. We use this data to illustrate the functionality of the package, the data consists of 25 thousand households and does not represent the true population size of Austria. It is published alongside the \proglang{R}-package \proglang{simFrame} \citep{alfons10} where it is used as example data. To keep this study as simple as possible, we further restrict the data for the main income holder and will only use some of the provided auxiliary information.
 
 <<>>=
 data(eusilcP, package = "simFrame")
@@ -295,64 +295,88 @@ data(eusilcP, package = "simFrame")
 simDat <- eusilcP %>% 
   mutate(agesq = age^2, eqIncome = as.numeric(eqIncome)) %>%
   filter(main) %>%
-  select(region, eqIncome, age, agesq, gender) %>%
-  base_add_id(c("region"))
+  select(region, eqIncome, age, agesq, gender)
 
-attr(simDat, "popMeans") <- 
-  simDat %>% 
-  group_by(idD, region) %>%
+head(simDat)
+@
+
+For the purpose of the design-based case study we want to apply the earlier introduced BHF estimator which is implemented in the \proglang{R}-package \proglang{sae} \citep{molina13}. The function we use, \proglang{eblupBHF}, expects three data objects to produce the predictions. The sampled data, the population means of the auxiliary variables and the population sizes in each domain. To store these informations and make them available during the simulation we attach them as attributes to the population data. There are other options but setting attributes to the processed data is supported in the package and presents a very flexible form of processing data on different aggregation levels. 
+
+<<>>=
+attr(simDat, "popMeans") <- group_by(simDat, region) %>% 
   summarise(age = mean(age),
             agesq = mean(agesq),
             genderFemale = mean(as.integer(gender) - 1),
             trueStat = mean(eqIncome))
 
-attr(simDat, "popN") <- 
-  simDat %>%
-  group_by(idD) %>%
-  summarise(N = n())
-
-attr(simDat, "popN")
 attr(simDat, "popMeans")
 
+attr(simDat, "popN") <- group_by(simDat, region) %>% summarise(N = n())
+
+attr(simDat, "popN")
 @
 
+Before we come to the estimation configuration, the first step is to add a sampling scheme. As stated earlier, the starting point of a simulation setup is to provide a \proglang{data.frame} as \textit{base-component} which, in this case, is the population data. Then the sampling component is added, in which we define to draw 10 per cent of the observations from each domain with simple random sampling.
+
 <<>>=
+setup <- simDat %>% 
+  sim_sample(sample_fraction(0.1, groupVars = "region"))
+setup
+@
+
+What now needs to be done, is to define the components which add the desired estimates to the data. Here we will compute the mean of income in each domain as the direct estimator and the EBLUP under the BHF model. Although this could be done in one step, we will separate the two computations to illustrate how to combine several estimations and define each component independent of one another. This focus on the definition of each component and meeting the convention of the defined interface is the intended approach. It will automatically organise the simulation and each component is arranged using the simulation framework. Hence, we will define two functions, one for adding the direct estimates and one for adding the EBLUP.
+
+<<>>=
+comp_direct <- function(dat) {
+  attr(dat, "sampleMean") <- 
+    dat %>% group_by(region) %>% summarise(direct = mean(eqIncome))
+  dat
+}
+
 comp_BHF <- function(dat) {
-  popMeans <- attr(dat, "popMeans") %>% select(-trueStat, -region)
+  popMeans <- select(attr(dat, "popMeans"), -trueStat)
   modelBHF <- 
-    eblupBHF(eqIncome ~ age + agesq + gender, idD, meanxpop = popMeans,
+    eblupBHF(eqIncome ~ age + agesq + gender, region, meanxpop = popMeans,
              popnsize = attr(dat, "popN"), data = dat)
   attr(dat, "BHF") <- modelBHF$eblup
   dat
 }
+@
 
-comp_direct <- function(dat) {
-  attr(dat, "sampleMean") <- 
-    dat %>% group_by(idD) %>% summarise(y = mean(eqIncome))
-  dat  
-}
+Another positive aspect of the above definitions is, that each step is relatively small and the purpose clearly defined, which will make them easy to understand, modify and reproduce. Finally we will combine the simulation results in an \textit{aggregation-component}, possibly followed by the application of area-level models but skipped in this example. The result of this aggregation step will be a \proglang{data.frame} with one row for each region.
 
+<<>>=
 agg_results <- function(dat) {
-  cbind(attr(dat, "popMeans") %>% select(idD, region, trueStat), 
+  cbind(attr(dat, "sampleMean"),
         BHF = attr(dat, "BHF")$eblup,
-        y = attr(dat, "sampleMean")$y)
+        trueStat = attr(dat, "popMeans")$trueStat)
 }
 @
 
+To combine the simulation setup and the defined components we arrange them using the function \proglang{sim\_comp\_sample} to ensure that the direct estimator and the EBLUP is computed on the sampled data, and \proglang{sim\_agg} to add the above aggregation step.
+
 <<>>=
-simResults <- simDat %>% 
-  sim_sample(sample_fraction(0.1, groupVars = "idD")) %>%
+setup <- setup %>%
   sim_comp_sample(comp_BHF) %>%
   sim_comp_sample(comp_direct) %>%
-  sim_agg(agg_results) %>%
-  sim(R = 50) %>%
-  rbind_all
+  sim_agg(agg_results)
+setup
+@
 
-ggDat <- simResults %>% 
-  melt(id.vars = c("idD", "region", "trueStat"), 
-       measure.vars = c("BHF", "y"), 
-       variable.name = "method",
-       value.name = "prediction")
+To repeat the simulation $R$ times the simulation setup can be passed to the function \proglang{sim}, the resulting \proglang{list} is directly combined using \proglang{rbind\_all}.
+
+<<>>=
+simResults <- setup %>% sim(R = 50) %>% rbind_all
+simResults
+@
+
+To further process the simulation results we present two graphics, using the package \proglang{ggplot2} \citep{wickham09} and \proglang{reshape2} \citep{wickham07}. 
+<<>>=
+ggDat <- melt(simResults,
+              id.vars = c("region", "trueStat"), 
+              measure.vars = c("BHF", "direct"), 
+              variable.name = "method",
+              value.name = "prediction")
 @
 
 <<designSimBIAS, fig=TRUE, width = 8.3, height=4, include=FALSE>>=
@@ -368,7 +392,6 @@ ggplot(ggDat, aes(x = region, y = (prediction - trueStat)^2, fill = method)) +
 @
 
 \includegraphics[width = \textwidth]{saeSim-designSimMSE.pdf}
-  
 
   
 \section{Outlook}
@@ -383,6 +406,7 @@ Use this package to share and publish simulation studies alongside papers. Contr
 	\end{itemize}
 	\item How to contribute?
 	\item parallel computations
+	\item Process the results of a simulation
 \end{itemize}
 
 
