@@ -71,14 +71,7 @@
 % Loading (and installing) necessary packages.
 <<echo=FALSE>>=
 if(!suppressPackageStartupMessages(require(saeSim))) {
-  if(!require(devtools)) {
-    install.packages("devtools", repos = "http://cran.at.r-project.org/", dependencies = TRUE)
-    library(devtools)
-  }
-  
-  install.packages(c("dplyr", "ggplot2", "MASS", "spdep"), 
-                   repos = "http://cran.at.r-project.org/", dependencies = TRUE)
-  install_github("wahani/saeSim")
+  install.packages("saeSim")
 }
 @
 %
@@ -374,7 +367,7 @@ agg_results <- function(dat) {
 }
 @
 
-To combine the simulation setup and the defined components we arrange them using the function \proglang{sim\_comp\_sample} to ensure that the direct estimator and the EBLUP is computed on the sampled data, and \proglang{sim\_agg} to add the above aggregation step.
+To combine the simulation setup and the defined components we arrange them using the function \proglang{sim\_comp\_sample} to ensure that the direct estimator and the EBLUP are computed on the sampled data, and \proglang{sim\_agg} to add the above aggregation step.
 
 <<>>=
 setup <- setup %>%
@@ -394,6 +387,7 @@ simResults
 To further process the simulation results we present two graphics, using the package \proglang{ggplot2} \citep{wickham09} and \proglang{reshape2} \citep{wickham07}. 
 
 <<>>=
+library(reshape2)
 ggDat <- melt(simResults,
               id.vars = c("region", "trueStat"), 
               measure.vars = c("BHF", "direct"), 
@@ -402,6 +396,7 @@ ggDat <- melt(simResults,
 @
 
 <<designSimBIAS, fig=TRUE, width = 8.3, height=4, include=FALSE>>=
+library(ggplot2)
 ggplot(ggDat, aes(x = region, y = prediction - trueStat, fill = method)) + 
   geom_boxplot() + theme(legend.position = "bottom")
 @
@@ -418,17 +413,15 @@ ggplot(ggDat, aes(x = region, y = (prediction - trueStat)^2, fill = method)) +
   
 \section{Outlook}
 \label{sec:outlook}
-With \proglang{saeSim} have three objects, making simulation tools available and reusable, unify the process behind simulations and third assist the researcher to design her code in a transparent way. By providing the package we not only want to make our own tools available but also open it for contributions. The package source is available on CRAN \url{somewhere} and the repository for development at \url{https://github.com/wahani/saeSim}. As GitHub allows to share and contribute source code using version control, it is open for submissions. Apart from the availability of specific utility functions, we hope to promote and support the design of source code for simulation studies. One aspect is the design of simulations as processes of data. Furthermore by supporting the definition of small and self contained components, i.e. functions, as this reduces the lines of code to be read in order to understand it's purpose. 
+With \proglang{saeSim} we have three objectives, making simulation tools available and reusable, unify the process behind simulations and third assist the researcher to design her code in a transparent way. By providing the package we not only want to make our own tools available but also open it for contributions. The package source is available on CRAN (\url{http://cran.r-project.org/web/packages/saeSim/}) and the repository for development on GitHub (\url{https://github.com/wahani/saeSim}). As GitHub allows to share and contribute source code using version-control, it is open for submissions. Apart from the availability of specific utility functions, we hope to promote and support the design of source code for simulation studies. One aspect is the design of simulations as processes of data. Furthermore, we encourage the definition of small and self contained components, i.e. functions, as this reduces the lines of code necessary to be read in order to understand it's purpose. 
 
-The package already provides more than introduced in this article and likewise some tools are still missing. The support of outlier contaminated data. At this time only representative outliers (outlying observations in the population) are supported. However, we plan to extend this approach for non-representative outliers (outliers are part of the sample but not the population). The inclusion of available random numbers from the R-language is already possible and supports easy access to generate group effects as needed in mixed models. As the response is created by an \proglang{R} expression, any form of non-linearity in the relationship between response and auxiliary variables and errors can be introduced.
+The package already provides more than introduced in this article and likewise some tools are still missing. To mention is the support of outlier contaminated data. At this time only representative outliers (outlying observations in the population) are supported. However, we plan to extend this approach for non-representative outliers (outliers are part of the sample but not the population). Furthermore, the inclusion of available random number generators available in the R-language is already possible and easy access to generate group effects as needed in mixed models is supported. Also, as the response is created by an \proglang{R} expression, any form of non-linearity in the relationship between response and auxiliary variables as well as error components can be modelled.
 
-A more technical feature is a back-end for parallel computations which is a link to the \proglang{parallel} package in \proglang{R}. Still missing but maybe helpful are tools to process the data after the simulation as well as plotting methods for that data. Already available are some simple plots for the simulation setups as well as a summary method, to get information on the expected run time and structure of the resulting data.
+A more technical feature is a back-end for parallel computations which is a link to the \proglang{parallel} package in \proglang{R} \citep{r14}. Tools to process result data after the simulation as well as plotting methods for that data are missing. Already available are some simple plots for the simulation setups as well as a summary method to get information on the expected runtime and structure of the resulting data.
 
 
 \begin{itemize}
 	\item Link to simFrame?
-	\item parallel computations
-	\item Process the results of a simulation
 \end{itemize}
 
 \section{TODO}

@@ -519,10 +519,10 @@ To repeat the simulation $R$ times the simulation setup can be passed to the fun
 Source: local data frame [450 x 6]
 
           region   direct      BHF trueStat idR simName
-1     Burgenland 23083.61 20800.16 22005.42   1        
+1     Burgenland 23083.61 20800.15 22005.42   1        
 2  Lower Austria 20414.91 20264.56 19813.37   1        
 3         Vienna 20756.78 20422.85 20395.84   1        
-4      Carinthia 19581.64 19912.42 19486.18   1        
+4      Carinthia 19581.64 19912.43 19486.18   1        
 5         Styria 19443.11 19757.42 19335.39   1        
 6  Upper Austria 20417.38 20356.38 20517.29   1        
 7       Salzburg 19900.44 20009.83 19890.33   1        
@@ -537,8 +537,59 @@ To further process the simulation results we present two graphics, using the pac
 
 \begin{Schunk}
 \begin{Sinput}
+> library(reshape2)
 > ggDat <- melt(simResults,
 +               id.vars = c("region", "trueStat"), 
 +               measure.vars = c("BHF", "direct"), 
 +               variable.name = "method",
 +               value.name = "prediction")
+\end{Sinput}
+\end{Schunk}
+
+\begin{Schunk}
+\begin{Sinput}
+> library(ggplot2)
+> ggplot(ggDat, aes(x = region, y = prediction - trueStat, fill = method)) + 
++   geom_boxplot() + theme(legend.position = "bottom")
+\end{Sinput}
+\end{Schunk}
+
+\includegraphics[width = \textwidth]{saeSim-designSimBIAS.pdf}
+
+\begin{Schunk}
+\begin{Sinput}
+> ggplot(ggDat, aes(x = region, y = (prediction - trueStat)^2, fill = method)) + 
++   geom_boxplot() + scale_y_log10() + theme(legend.position = "bottom")
+\end{Sinput}
+\end{Schunk}
+
+\includegraphics[width = \textwidth]{saeSim-designSimMSE.pdf}
+
+  
+\section{Outlook}
+\label{sec:outlook}
+With \proglang{saeSim} we have three objectives, making simulation tools available and reusable, unify the process behind simulations and third assist the researcher to design her code in a transparent way. By providing the package we not only want to make our own tools available but also open it for contributions. The package source is available on CRAN (\url{http://cran.r-project.org/web/packages/saeSim/}) and the repository for development on GitHub (\url{https://github.com/wahani/saeSim}). As GitHub allows to share and contribute source code using version-control, it is open for submissions. Apart from the availability of specific utility functions, we hope to promote and support the design of source code for simulation studies. One aspect is the design of simulations as processes of data. Furthermore, we encourage the definition of small and self contained components, i.e. functions, as this reduces the lines of code necessary to be read in order to understand it's purpose. 
+
+The package already provides more than introduced in this article and likewise some tools are still missing. To mention is the support of outlier contaminated data. At this time only representative outliers (outlying observations in the population) are supported. However, we plan to extend this approach for non-representative outliers (outliers are part of the sample but not the population). Furthermore, the inclusion of available random number generators available in the R-language is already possible and easy access to generate group effects as needed in mixed models is supported. Also, as the response is created by an \proglang{R} expression, any form of non-linearity in the relationship between response and auxiliary variables as well as error components can be modelled.
+
+A more technical feature is a back-end for parallel computations which is a link to the \proglang{parallel} package in \proglang{R} \citep{r14}. Tools to process result data after the simulation as well as plotting methods for that data are missing. Already available are some simple plots for the simulation setups as well as a summary method to get information on the expected runtime and structure of the resulting data.
+
+
+\begin{itemize}
+	\item Link to simFrame?
+\end{itemize}
+
+\section{TODO}
+\begin{itemize}
+	\item Chapter 3 + 4 - what will happen in these chapters?
+	\item kein RBIAS + RRMSE in model-based
+	\item Einleitung 4.2 was ist das ziel der design-basierten simulation
+	\item Conclusion
+\end{itemize}
+
+%\bibliographystyle{plainat}
+\bibliography{saeSim}
+
+
+
+\end{document}
