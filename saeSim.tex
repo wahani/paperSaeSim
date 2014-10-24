@@ -297,7 +297,7 @@ Not all necessary functions can be provided by the package. As said before, one 
 \end{Soutput}
 \end{Schunk}
 
-The object \proglang{setup} stores all necessary information to run one iteration of the simulation. To start more repetitions, \proglang{sim} is called, which will return $R = 100$ (as the number of repetitions) \proglang{data.frame}s containing the simulated data from each iteration as a \proglang{list}. We use \proglang{rbind\_all} from the package \proglang{dplyr} to append the resulting \proglang{list}:
+The object \proglang{setup} stores all necessary information to run one iteration of the simulation. To start more repetitions, \proglang{sim} is called, which will return $R = 100$ (as the number of repetitions) \proglang{data.frame}s containing the simulated data from each iteration as a \proglang{list}. We use \proglang{rbind\_all} from the package \proglang{dplyr} to combine the resulting \proglang{list} into one \proglang{data.frame}:
 
 \begin{Schunk}
 \begin{Sinput}
@@ -328,44 +328,6 @@ Source: local data frame [4,000 x 6]
 \end{Schunk}
 
 An additional variable \proglang{idR} is automatically added as an ID-variable for the iteration as well as a variable \proglang{simName} which purpose is to distinguish between scenarios, should there be more than one. At this time we do not provide further tools to process the resulting data. As it is a \proglang{data.frame} many packages for processing that data are available in \proglang{R}, in this case \proglang{dplyr} \citep{wickham14} and \proglang{reshape2} \citep{wickham07} have been used. The Rmd-file for this article can be checked for further detail, thus we do not see need to provide further tools from here on.
-
-%<<echo=FALSE>>=
-%library(reshape2)
-%library(ggplot2)
-%ggDat <- simResults %>% 
-%  melt(id.vars = c("idD", "trueStat"), 
-%       measure.vars = c("FH", "y"), 
-%       variable.name = "method",
-%       value.name = "prediction") %>% 
-%  mutate(RBIAS = (prediction - trueStat)/trueStat,
-%         RRMSE = (prediction - trueStat)^2/trueStat) %>%
-%  group_by(idD, method) %>% 
-%  summarise(RBIAS = mean(RBIAS),
-%            RMSE = mean(RRMSE)) %>%
-%  as.data.frame
-%@
-%
-%<<modelSimBIAS, echo = FALSE, fig=TRUE, width = 4, height=4, include=FALSE>>=
-%ggplot(ggDat, aes(y = RBIAS, x = method)) + geom_boxplot() + coord_flip()
-%@
-%
-%<<modelSimRMSE, echo = FALSE, fig=TRUE, width = 4, height=4, include=FALSE>>=
-%ggplot(ggDat, aes(y = RMSE, x = method)) + geom_boxplot() + coord_flip()
-%@
-
-%\begin{figure}[h!]
-%\begin{subfigure}{.5\textwidth}
-%\centering
-%\includegraphics[width=.9\linewidth]{saeSim-modelSimBIAS.pdf}
-%\caption{}
-%\end{subfigure}
-%\begin{subfigure}{.5\textwidth}
-%\centering
-%\includegraphics[width=.9\linewidth]{saeSim-modelSimRMSE.pdf}
-%\caption{}
-%\end{subfigure}
-%\caption{RBIAS and RMSE for the conducted model-based simulation}
-%\end{figure}
 
 \subsection{Design-based simulation}
 
@@ -519,10 +481,10 @@ To repeat the simulation $R$ times the simulation setup can be passed to the fun
 Source: local data frame [450 x 6]
 
           region   direct      BHF trueStat idR simName
-1     Burgenland 23083.61 20800.16 22005.42   1        
+1     Burgenland 23083.61 20800.15 22005.42   1        
 2  Lower Austria 20414.91 20264.56 19813.37   1        
 3         Vienna 20756.78 20422.85 20395.84   1        
-4      Carinthia 19581.64 19912.42 19486.18   1        
+4      Carinthia 19581.64 19912.43 19486.18   1        
 5         Styria 19443.11 19757.42 19335.39   1        
 6  Upper Austria 20417.38 20356.38 20517.29   1        
 7       Salzburg 19900.44 20009.83 19890.33   1        
@@ -537,8 +499,65 @@ To further process the simulation results we present two graphics, using the pac
 
 \begin{Schunk}
 \begin{Sinput}
+> library(reshape2)
 > ggDat <- melt(simResults,
 +               id.vars = c("region", "trueStat"), 
 +               measure.vars = c("BHF", "direct"), 
 +               variable.name = "method",
 +               value.name = "prediction")
+\end{Sinput}
+\end{Schunk}
+
+\begin{Schunk}
+\begin{Sinput}
+> library(ggplot2)
+\end{Sinput}
+\end{Schunk}
+
+\begin{Schunk}
+\begin{Sinput}
+> ggplot(ggDat, aes(x = region, y = prediction - trueStat, fill = method)) + 
++   geom_boxplot() + theme(legend.position = "bottom")
+\end{Sinput}
+\end{Schunk}
+
+%\includegraphics[width = \textwidth]{saeSim-designSimBIAS.pdf}
+
+\begin{Schunk}
+\begin{Sinput}
+> ggplot(ggDat, aes(x = region, y = (prediction - trueStat)^2, fill = method)) + 
++   geom_boxplot() + scale_y_log10() + theme(legend.position = "bottom")
+\end{Sinput}
+\end{Schunk}
+
+%\includegraphics[width = \textwidth]{saeSim-designSimMSE.pdf}
+
+  
+\section{Outlook}
+\label{sec:outlook}
+With \proglang{saeSim} have three objects, making simulation tools available and reusable, unify the process behind simulations and third assist the researcher to design her code in a transparent way. By providing the package we not only want to make our own tools available but also open it for contributions. The package source is available on CRAN \url{somewhere} and the repository for development at \url{https://github.com/wahani/saeSim}. As GitHub allows to share and contribute source code using version control, it is open for submissions. Apart from the availability of specific utility functions, we hope to promote and support the design of source code for simulation studies. One aspect is the design of simulations as processes of data. Furthermore by supporting the definition of small and self contained components, i.e. functions, as this reduces the lines of code to be read in order to understand it's purpose. 
+
+The package already provides more than introduced in this article and likewise some tools are still missing. The support of outlier contaminated data. At this time only representative outliers (outlying observations in the population) are supported. However, we plan to extend this approach for non-representative outliers (outliers are part of the sample but not the population). The inclusion of available random numbers from the R-language is already possible and supports easy access to generate group effects as needed in mixed models. As the response is created by an \proglang{R} expression, any form of non-linearity in the relationship between response and auxiliary variables and errors can be introduced.
+
+A more technical feature is a back-end for parallel computations which is a link to the \proglang{parallel} package in \proglang{R}. Still missing but maybe helpful are tools to process the data after the simulation as well as plotting methods for that data. Already available are some simple plots for the simulation setups as well as a summary method, to get information on the expected run time and structure of the resulting data.
+
+
+\begin{itemize}
+	\item Link to simFrame?
+	\item parallel computations
+	\item Process the results of a simulation
+\end{itemize}
+
+\section{TODO}
+\begin{itemize}
+	\item Chapter 3 + 4 - what will happen in these chapters?
+	\item Einleitung 4.2 was ist das ziel der design-basierten simulation
+	\item Conclusion
+\end{itemize}
+
+%\bibliographystyle{plainat}
+\bibliography{saeSim}
+
+
+
+\end{document}

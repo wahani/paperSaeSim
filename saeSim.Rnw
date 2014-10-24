@@ -71,14 +71,8 @@
 % Loading (and installing) necessary packages.
 <<echo=FALSE>>=
 if(!suppressPackageStartupMessages(require(saeSim))) {
-  if(!require(devtools)) {
-    install.packages("devtools", repos = "http://cran.at.r-project.org/", dependencies = TRUE)
-    library(devtools)
-  }
-  
-  install.packages(c("dplyr", "ggplot2", "MASS", "spdep"), 
-                   repos = "http://cran.at.r-project.org/", dependencies = TRUE)
-  install_github("wahani/saeSim")
+  install.packages("saeSim")
+  library(saeSim)
 }
 @
 %
@@ -256,7 +250,7 @@ setup <- setup %>% sim_comp_agg(comp_FH)
 setup
 @
 
-The object \proglang{setup} stores all necessary information to run one iteration of the simulation. To start more repetitions, \proglang{sim} is called, which will return $R = 100$ (as the number of repetitions) \proglang{data.frame}s containing the simulated data from each iteration as a \proglang{list}. We use \proglang{rbind\_all} from the package \proglang{dplyr} to append the resulting \proglang{list}:
+The object \proglang{setup} stores all necessary information to run one iteration of the simulation. To start more repetitions, \proglang{sim} is called, which will return $R = 100$ (as the number of repetitions) \proglang{data.frame}s containing the simulated data from each iteration as a \proglang{list}. We use \proglang{rbind\_all} from the package \proglang{dplyr} to combine the resulting \proglang{list} into one \proglang{data.frame}:
 
 <<results=hide>>=
 library(dplyr)
@@ -267,44 +261,6 @@ simResults %>% select(idD, idR, simName, trueStat, y, FH)
 @
 
 An additional variable \proglang{idR} is automatically added as an ID-variable for the iteration as well as a variable \proglang{simName} which purpose is to distinguish between scenarios, should there be more than one. At this time we do not provide further tools to process the resulting data. As it is a \proglang{data.frame} many packages for processing that data are available in \proglang{R}, in this case \proglang{dplyr} \citep{wickham14} and \proglang{reshape2} \citep{wickham07} have been used. The Rmd-file for this article can be checked for further detail, thus we do not see need to provide further tools from here on.
-
-%<<echo=FALSE>>=
-%library(reshape2)
-%library(ggplot2)
-%ggDat <- simResults %>% 
-%  melt(id.vars = c("idD", "trueStat"), 
-%       measure.vars = c("FH", "y"), 
-%       variable.name = "method",
-%       value.name = "prediction") %>% 
-%  mutate(RBIAS = (prediction - trueStat)/trueStat,
-%         RRMSE = (prediction - trueStat)^2/trueStat) %>%
-%  group_by(idD, method) %>% 
-%  summarise(RBIAS = mean(RBIAS),
-%            RMSE = mean(RRMSE)) %>%
-%  as.data.frame
-%@
-%
-%<<modelSimBIAS, echo = FALSE, fig=TRUE, width = 4, height=4, include=FALSE>>=
-%ggplot(ggDat, aes(y = RBIAS, x = method)) + geom_boxplot() + coord_flip()
-%@
-%
-%<<modelSimRMSE, echo = FALSE, fig=TRUE, width = 4, height=4, include=FALSE>>=
-%ggplot(ggDat, aes(y = RMSE, x = method)) + geom_boxplot() + coord_flip()
-%@
-
-%\begin{figure}[h!]
-%\begin{subfigure}{.5\textwidth}
-%\centering
-%\includegraphics[width=.9\linewidth]{saeSim-modelSimBIAS.pdf}
-%\caption{}
-%\end{subfigure}
-%\begin{subfigure}{.5\textwidth}
-%\centering
-%\includegraphics[width=.9\linewidth]{saeSim-modelSimRMSE.pdf}
-%\caption{}
-%\end{subfigure}
-%\caption{RBIAS and RMSE for the conducted model-based simulation}
-%\end{figure}
 
 \subsection{Design-based simulation}
 
@@ -394,6 +350,7 @@ simResults
 To further process the simulation results we present two graphics, using the package \proglang{ggplot2} \citep{wickham09} and \proglang{reshape2} \citep{wickham07}. 
 
 <<>>=
+library(reshape2)
 ggDat <- melt(simResults,
               id.vars = c("region", "trueStat"), 
               measure.vars = c("BHF", "direct"), 
@@ -401,19 +358,23 @@ ggDat <- melt(simResults,
               value.name = "prediction")
 @
 
-<<designSimBIAS, fig=TRUE, width = 8.3, height=4, include=FALSE>>=
+<<>>=
+library(ggplot2)
+@
+
+<<designSimBIAS, fig = TRUE, width = 8.3, height=4, include = FALSE>>=
 ggplot(ggDat, aes(x = region, y = prediction - trueStat, fill = method)) + 
   geom_boxplot() + theme(legend.position = "bottom")
 @
 
-\includegraphics[width = \textwidth]{saeSim-designSimBIAS.pdf}
+%\includegraphics[width = \textwidth]{saeSim-designSimBIAS.pdf}
 
-<<designSimMSE, fig=TRUE, width = 8.3, height=4, include=FALSE>>=
+<<designSimMSE, fig=TRUE, width = 8.3, height=4, include = FALSE>>=
 ggplot(ggDat, aes(x = region, y = (prediction - trueStat)^2, fill = method)) + 
   geom_boxplot() + scale_y_log10() + theme(legend.position = "bottom")
 @
 
-\includegraphics[width = \textwidth]{saeSim-designSimMSE.pdf}
+%\includegraphics[width = \textwidth]{saeSim-designSimMSE.pdf}
 
   
 \section{Outlook}
@@ -434,7 +395,6 @@ A more technical feature is a back-end for parallel computations which is a link
 \section{TODO}
 \begin{itemize}
 	\item Chapter 3 + 4 - what will happen in these chapters?
-	\item kein RBIAS + RRMSE in model-based
 	\item Einleitung 4.2 was ist das ziel der design-basierten simulation
 	\item Conclusion
 \end{itemize}
