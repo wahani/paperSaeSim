@@ -393,9 +393,8 @@ A more technical feature is a back-end for parallel computations which is a link
 
 \section{TODO}
 \begin{itemize}
-	\item Chapter 3 + 4 - what will happen in these chapters?
-	\item Einleitung 4.2 was ist das ziel der design-basierten simulation
-	\item Conclusion
+	\item abstract
+	\item farbe flowchart
 \end{itemize}
 
 %\bibliographystyle{plainat}
