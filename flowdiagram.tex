@@ -7,7 +7,7 @@
 \pgfsetlayers{background,main,foreground}
  
 % Define block styles  
-\tikzstyle{materia}=[draw, fill=blue!20, text width=6.0em, text centered,
+\tikzstyle{materia}=[draw, fill=lightgray, text width=6.0em, text centered,
   minimum height=1.5em,drop shadow]
 \tikzstyle{element} = [materia, text width=8em, minimum width=10em,
   minimum height=3em, rounded corners, drop shadow]
@@ -37,7 +37,7 @@
     % Right-bottom corner of the background rectanle
     \path (#3.east |- #4.south)+(+0.5,-0.25) node (a2) {};
     % Draw the background
-    \path[fill=yellow!20,rounded corners, draw=black!50, dashed]
+    \path[fill=yellow, opacity = 0.2,rounded corners, draw=black!50, dashed]
       (a1) rectangle (a2);
     \path (a1.east |- a1.south)+(0.8,-0.3) node (u1)[texto]
       {\textsize\textit{#5}};

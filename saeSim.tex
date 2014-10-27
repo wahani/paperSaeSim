@@ -141,12 +141,14 @@ Model \ref{eq:FH} is effectively a random-intercept model where the distribution
 \begin{center}
 \includegraphics[width=0.5\textwidth]{flowdiagram}
 \end{center}
-\caption{\label{fig:flowdiagram}Process of simulation.} 
+\caption{\label{fig:flowdiagram}Process of simulation. Left column are the steps in a simulation. Right column are the corresponding function names to represent those steps in \proglang{R}} 
 \end{wrapfigure}
 %
-In our opinion simulation studies can best be summarised when understood as a process of data manipulation. Thus the main focus of \proglang{saeSim} is to define the steps in that process which can then be \textit{cleanly} defined and repeated. Before we go into any detail of the functionality of the package we will discuss the process behind simulation studies and later how \proglang{saeSim} maps this process into \proglang{R}.
+In this section we will present the simulation framework implemented in \proglang{saeSim}. The framework relies strongly on the idea to describe a simulation as a process of data manipulation. Independent of simulation studies, \cite{wickham14a} as well as \cite{wickham14b} strongly promote this idea by providing tools for cleaning and transforming data. In those frameworks every defined function takes a \proglang{data.frame} as input and also returns it modified. This leads to a natural connection between all defined functions as the result of one function can be directly passed to the next. The symbioses of these packages with the pipe operator (\proglang{\%>\%}) from the package \proglang{magrittr} \citep{bache14} only emphasises the process of data manipulation. 
 
-Simulation studies in small area estimation address three different levels, the population, the sample and data on aggregated level, as illustrated in figure \ref{fig:flowdiagram}. The \textbf{population-level} defines the data on which a study is conducted and may be a true population, synthetic population data or randomly generated variates from a model. We see three different point of views to define a population. First \textit{design-based}, which means that a simulation study is based on true or synthetic data of \textit{one} population. Second a \textit{semi-model-based} point of view, where only one population is drawn from a model and is fixed in the whole simulation study. And third, \textit{model-based} studies which have changing random populations drawn from a model.
+In \proglang{saeSim} we want to extend this approach to simulation studies where we have the field of small area estimation in mind. The main focus lies on the description of a simulation as a process of data manipulation. Each step in this process can be defined as a self contained component (function) and thus easily replaces extended and most importantly reused. Before we go into any detail of the functionality of the package we will discuss this process behind simulation studies followed by how \proglang{saeSim} maps this process into \proglang{R}.
+
+Simulation studies in small area estimation address three different levels, the population, the sample and data on aggregated level. Figure \ref{fig:flowdiagram} illustrates these levels. In the left column the steps of data manipulation are described, the right column presents the function names to define those steps. The \textbf{population-level} defines the data on which a study is conducted and may be a true population, synthetic population data or randomly generated variates from a model. We see three different point of views to define a population. First \textit{design-based}, which means that a simulation study is based on true or synthetic data of \textit{one} population. Second a \textit{semi-model-based} point of view, where only one population is drawn from a model and is fixed in the whole simulation study. And third, \textit{model-based} studies which have changing random populations drawn from a model.
 
 The scope of this article is not not to promote any of those viewpoints, but simply to identify the similarity in them. The \textit{base} (first component in figure \ref{fig:flowdiagram}) of any simulation study is a data table, the question is, if this data is \textit{fixed} or \textit{random} over the course of the simulation. Or from a more technical point of view, is the data generation (the second step in figure \ref{fig:flowdiagram}) repeated in each simulation run or omitted?
 
@@ -156,16 +158,26 @@ The \textbf{sample-level} is when domain predictions are conducted for unit-leve
 
 As the sample-level is when unit-level models are applied, the \textbf{aggregate-level} is when area-level models are applied (the seventh and last component in figure \ref{fig:flowdiagram}). Area-level models in small area estimation typically only use information available for domains (in contrast to units). Thus, the question for simulation studies for area-level methods is, if the data is generated on unit-level and used after the aggregation (sixth component in figure \ref{fig:flowdiagram}) or if the data is generated directly on area-level, i.e. drawn from an area-level model. Depending on whether unit-level data and sampling are part of the simulation the aggregate-level follows the generation of the population or is based on the aggregated sample. Again, we do not promote a specific viewpoint but simply allow steps in the process of simulation to be omitted.
 
-Depending on the topic of research steps in this simulation framework can be more relevant than others or completely irrelevant. We see these steps more as a complete list of phases one can encounter, thus single components can be omitted if not relevant in specific applications. For example \textit{data generation} is not relevant if you have population data, or the \textit{sample-level} is not used, when the sample is directly drawn from the model.
+Depending on the topic of research, steps in this simulation framework can be more relevant than others or completely irrelevant. We see these steps more as a complete list of phases one can encounter, thus single components can be omitted if not relevant in specific applications. For example \textit{data generation} is not relevant if you have population data, or the \textit{sample-level} is not used, when the sample is directly drawn from the model.
 
-From this considerations, \proglang{saeSim} maps the different steps into \proglang{R}. Two layers with separate responsibilities need to be discussed. The first is \textit{how} different simulation components can be combined, and the second \textit{when} or in which order they are applied. Regarding the first, in \proglang{saeSim} we put a special emphasis on the interface of each component, which is to use functions which take a \proglang{data.frame} as argument and have a \proglang{data.frame} as return value. This is a widely used approach for data manipulation and promoted recently in the package \proglang{dplyr} \citep{wickham14}. This definition of interfaces, the return value of one component is the input of the next, is also used in \proglang{saeSim}.
+From this considerations, \proglang{saeSim} maps the different steps into \proglang{R}. Two layers with separate responsibilities need to be discussed. The first is \textit{how} different simulation components can be combined, and the second is \textit{when} or in which order they are applied. Regarding the first, in \proglang{saeSim} we put a special emphasis on the interface of each component, which is to use functions which take a \proglang{data.frame} as argument and have a \proglang{data.frame} as return value. This definition of interfaces, the return value of one component is the input of the next, is used for all existing tools in \proglang{saeSim}.
 
-Understanding a simulation as a process of manipulating one data object, see the second column in figure \ref{fig:flowdiagram} how the different steps in a simulation can be accessed. It is important to note that the functions in figure \ref{fig:flowdiagram} control the process, the second layer, i.e. \textit{when} components are applied. Each of these functions take a simulation setup object to be modified and a function with the discussed interface as arguments. Hence a simulation setup is a collection of functions to be applied in a certain sequence. Also the second-layer functions have a defined interface: a \proglang{sim\_setup} as input to be modified and a \proglang{sim\_setup} as output. Thus, components can be chained together using the \textit{pipe operator} (\proglang{\%>\%}) from the package \proglang{magrittr} \citep{bache14}.
+The second column in figure \ref{fig:flowdiagram} shows how the different steps in a simulation can be accessed. It is important to note that the functions in figure \ref{fig:flowdiagram} control the process, the second layer, i.e. \textit{when} components are applied. Each of these functions take a simulation setup object to be modified and a function with the discussed interface as arguments. Hence a simulation setup is a collection of functions to be applied in a certain sequence. Also the second-layer functions have a defined interface: a \proglang{sim\_setup} as input to be modified and a \proglang{sim\_setup} as output. Thus, components can be chained together using the \textit{pipe operator} (\proglang{\%>\%}) from the package \proglang{magrittr}.
 
-With \proglang{saeSim} we want to contribute tools for simulation studies in the field of small area estimation. We see the need for sharing tools for data generation and simulation amongst the scientific community and thus defined an interface for these tools as well as a platform to make them accessible. By defining the steps behind a simulation we hope to promote a reasonable way to communicate them alongside publications and during research. In the next section we will present a case study and focus more on the concrete functionality provided by the package.
+With \proglang{saeSim} we want to contribute tools for simulation studies in the field of small area estimation. We see the need for sharing tools for data generation and simulation amongst the scientific community and thus defined an interface for these tools as well as a platform to make them accessible. By defining the steps behind a simulation we hope to promote a reasonable way to communicate them alongside publications and during research. In the next section we present two case studies and introduce some of the main features provided by the package.
 
-\section{Case study}
-Braking the responsibility into what is applied and when it is applied addresses several aspects of reproducibility. First, by defining the interface between all components, it is easy to combine them in any combination and thus easy to share and reuse. Second, by controlling when components are applied we avoid the necessity of control structures in syntax and emphasise on the definition of components. The following example shows these aspects of the package using a predefined simulation setup:
+\section{Case studies}
+\label{sec:caseStudy}
+We will present two case studies, one model-based simulation in section \ref{sec:csModel} and a design-based simulation in section \ref{sec:csDesign}. Before, we want to introduce some basic functionalities as the pipe operator (\proglang{\%>\%}) needs some explanation, if unfamiliar. The pipe operator is designed to make otherwise nested expressions more readable as a line can be read from left to right, instead of inside out \citep{bache14}. As a minimal example see the following lines which are equivalent:
+
+\begin{Schunk}
+\begin{Sinput}
+> sum(1:10)
+> 1:10 %>% sum
+\end{Sinput}
+\end{Schunk}
+
+In \proglang{saeSim} we rely on this operator, although all functions can be used without, we strongly recommend to use it. The following example shows some of the aspects of the package:
 
 \begin{Schunk}
 \begin{Sinput}
@@ -174,44 +186,17 @@ Braking the responsibility into what is applied and when it is applied addresses
 \end{Sinput}
 \end{Schunk}
 
-Without knowing anything about the setup defined in \proglang{sim\_base\_lm} we can see that \proglang{setup1} and \proglang{setup2} only differ in the applied sampling scheme. \proglang{sim\_sample} is responsible to control when a function is applied (after the population-level) and \proglang{sample\_number(5)} and \proglang{sample\_fraction(0.05)} define the explicit way of drawing samples. The pipe operator \proglang{\%>\%} is used to add new components to the setup. As said before the composition of a simulation in that manner will focus on the definition of components and hide control structures. The next example will repeat the simulation stored in \proglang{setup1} two times. The results are returned in a list of \proglang{data.frame}s which have five rows as we sample 5 observations:
+Without knowing anything about the setup defined in \proglang{sim\_base\_lm} we can see that \proglang{setup1} and \proglang{setup2} only differ in the applied sampling scheme. \proglang{sim\_sample} is responsible to control when a function is applied (after the population-level) and \proglang{sample\_number(5)} and \proglang{sample\_fraction(0.05)} define the explicit way of drawing samples. Braking the responsibility of each component into what is applied and when it is applied makes it possible to add new components to any step in the process. The composition of a simulation in that manner will focus on the definition of components and hide control structures. Any function can be passed to \proglang{sim\_sample} which has a \proglang{data.frame} as input as well as return value. The only responsibility of that function is to draw a sample, which makes it easy to find, understand and reuse when published. The operator \proglang{\%>\%} is used to add new components to the setup. 
 
-\begin{Schunk}
-\begin{Sinput}
-> setup1 %>% sim(R = 2) %>% sapply(nrow)
-\end{Sinput}
-\begin{Soutput}
-[1] 5 5
-\end{Soutput}
-\end{Schunk}
-
-As a side remark: The pipe operator, \proglang{\%>\%}, is designed to make otherwise nested expressions more readable as a line can be read from left to right, instead of inside out \citep{bache14}. As a minimal example see the following lines which are equivalent:
-
-\begin{Schunk}
-\begin{Sinput}
-> sum(1:10)
-\end{Sinput}
-\begin{Soutput}
-[1] 55
-\end{Soutput}
-\begin{Sinput}
-> 1:10 %>% sum
-\end{Sinput}
-\begin{Soutput}
-[1] 55
-\end{Soutput}
-\end{Schunk}
-
-
-\label{sec:caseStudy}
 \subsection{Model-based simulation}
-
-
-The first task for the model-based simulation is to generate the data under the model:
+\label{sec:csModel}
+In the following we want to show how to construct a simulation in a model-based setting. The goal is to estimate the domain predictions under a FH model. Components which are involved are \textit{data generation} and \textit{computing on aggregated data}. The first step is to generate the data under the model:
 
 \[ y_i = 100 + 2 \cdot x_i + v_i + e_i\]
 
-where $x_i \stackrel{iid}{\sim} N(0, 4^2)$, $v_i \stackrel{iid}{\sim} N(0, 1)$ and $e_i \stackrel{indep}{\sim} N(0, \sigma_i^2)$ with $\sigma_i^2 = 0.1, 0.2, \dots, 4$ and $i = 1, \dots, 40$ as index for the domains. Also are $x_i$, $v_i$ and $e_i$ independent from each other. The starting point is always a data table as \textit{base-component}, in this case just with an id variable named \proglang{idD} and constructed with the function \proglang{base\_id}. Any random number generator in \proglang{R} can be used, however we have a strictly \textit{normal} model, for which some predefined functions can be used.
+where $x_i \stackrel{iid}{\sim} N(0, 4^2)$, $v_i \stackrel{iid}{\sim} N(0, 1)$ and $e_i \stackrel{indep}{\sim} N(0, \sigma_i^2)$ with $\sigma_i^2 = 0.1, 0.2, \dots, 4$ and $i = 1, \dots, 40$ as index for the domains. Also are $x_i$, $v_i$ and $e_i$ independent from each other. The area-level data for the simulation is generated in each Monte Carlo repetition. 
+
+In this case the \textit{base-component} is a data table with an id variable named \proglang{idD} and constructed with the function \proglang{base\_id}. Any random number generator in \proglang{R} can be used, however we have normally distributed variates, for which some predefined functions are available.
 
 \begin{Schunk}
 \begin{Sinput}
@@ -236,7 +221,7 @@ where $x_i \stackrel{iid}{\sim} N(0, 4^2)$, $v_i \stackrel{iid}{\sim} N(0, 1)$ a
 \end{Soutput}
 \end{Schunk}
 
-Note that if you print a simulation setup to the console, as in the above example, one simulation run is performed and only the first rows of the resulting data table are printed. This enables interactivity with the object itself, however it hides that the setup object is a collection of functions to be called. The error component $e_i$ in the model has different variances which is not covered by a predefined function. Thus, as a \textit{generator} function we will define a function which takes a \proglang{data.frame} as input and returns it after adding a variable named \proglang{vardir} with the variances and the variable \proglang{e} with the generated random numbers:
+Note that if you print a simulation setup to the console, as in the above example, one simulation run is performed and only the first rows of the resulting data table are printed. This enables interactivity with the object itself, however it hides that the setup object is a collection of functions to be called. The error component $e_i$ in the model has different variances which is not covered by a predefined function. Thus, as a \textit{generator component} we define a function which takes a \proglang{data.frame} as input and returns it after adding a variable named \proglang{vardir} with the variances and the variable \proglang{e} with the generated random numbers:
 
 \begin{Schunk}
 \begin{Sinput}
@@ -269,7 +254,7 @@ The last step in data generation is to construct the response variable which wil
 \end{Sinput}
 \end{Schunk}
 
-Not all necessary functions can be provided by the package. As said before, one of the main objectives was to define the interface between components. To add the area-level predictions from a Fay-Herriot model we need to define a function for that. The function takes a \proglang{data.frame} as input and returns the modified version. Here we use the function \proglang{eblupFH} from the package \proglang{sae} \citep{molina13} to estimate the EBLUP under the FH model. Finally we add \proglang{comp\_FH} to the process:
+To add the area-level predictions from a Fay-Herriot model we need to define another component. The function takes a \proglang{data.frame} as input and returns the modified version. For the estimation of the EBLUP under the FH model we use the function \proglang{eblupFH} from the package \proglang{sae} \citep{molina13}. Finally we add \proglang{comp\_FH} to the process:
 
 \begin{Schunk}
 \begin{Sinput}
@@ -297,7 +282,7 @@ Not all necessary functions can be provided by the package. As said before, one 
 \end{Soutput}
 \end{Schunk}
 
-The object \proglang{setup} stores all necessary information to run one iteration of the simulation. To start more repetitions, \proglang{sim} is called, which will return $R = 100$ (as the number of repetitions) \proglang{data.frame}s containing the simulated data from each iteration as a \proglang{list}. We use \proglang{rbind\_all} from the package \proglang{dplyr} to append the resulting \proglang{list}:
+The object \proglang{setup} stores all necessary information to run one iteration of the simulation. In the following $R = 100$ repetitions are performed, the result is a \proglang{list} of \proglang{data.frame}s. The function \proglang{rbind\_all} from the package \proglang{dplyr} is used to combine the resulting \proglang{list}:
 
 \begin{Schunk}
 \begin{Sinput}
@@ -327,49 +312,12 @@ Source: local data frame [4,000 x 6]
 \end{Soutput}
 \end{Schunk}
 
-An additional variable \proglang{idR} is automatically added as an ID-variable for the iteration as well as a variable \proglang{simName} which purpose is to distinguish between scenarios, should there be more than one. At this time we do not provide further tools to process the resulting data. As it is a \proglang{data.frame} many packages for processing that data are available in \proglang{R}, in this case \proglang{dplyr} \citep{wickham14} and \proglang{reshape2} \citep{wickham07} have been used. The Rmd-file for this article can be checked for further detail, thus we do not see need to provide further tools from here on.
-
-%<<echo=FALSE>>=
-%library(reshape2)
-%library(ggplot2)
-%ggDat <- simResults %>% 
-%  melt(id.vars = c("idD", "trueStat"), 
-%       measure.vars = c("FH", "y"), 
-%       variable.name = "method",
-%       value.name = "prediction") %>% 
-%  mutate(RBIAS = (prediction - trueStat)/trueStat,
-%         RRMSE = (prediction - trueStat)^2/trueStat) %>%
-%  group_by(idD, method) %>% 
-%  summarise(RBIAS = mean(RBIAS),
-%            RMSE = mean(RRMSE)) %>%
-%  as.data.frame
-%@
-%
-%<<modelSimBIAS, echo = FALSE, fig=TRUE, width = 4, height=4, include=FALSE>>=
-%ggplot(ggDat, aes(y = RBIAS, x = method)) + geom_boxplot() + coord_flip()
-%@
-%
-%<<modelSimRMSE, echo = FALSE, fig=TRUE, width = 4, height=4, include=FALSE>>=
-%ggplot(ggDat, aes(y = RMSE, x = method)) + geom_boxplot() + coord_flip()
-%@
-
-%\begin{figure}[h!]
-%\begin{subfigure}{.5\textwidth}
-%\centering
-%\includegraphics[width=.9\linewidth]{saeSim-modelSimBIAS.pdf}
-%\caption{}
-%\end{subfigure}
-%\begin{subfigure}{.5\textwidth}
-%\centering
-%\includegraphics[width=.9\linewidth]{saeSim-modelSimRMSE.pdf}
-%\caption{}
-%\end{subfigure}
-%\caption{RBIAS and RMSE for the conducted model-based simulation}
-%\end{figure}
+An additional variable \proglang{idR} is automatically added as an ID-variable for the iteration as well as a variable \proglang{simName} to distinguish between scenarios, should there be more than one. At this time we do not provide further tools to process the resulting data. As it is a \proglang{data.frame} many packages are available in \proglang{R}. This point will be presented in more detail in the design-based study.
 
 \subsection{Design-based simulation}
+\label{sec:csDesign}
 
-In the design-based simulation we want to illustrate the use of \proglang{saeSim} when starting from data of a population. For this purpose we use a synthetic population generated from Austrian EU-SILC (European Union Statistics on Income and Living Conditions) data. We use this data to illustrate the functionality of the package, the data consists of 25 thousand households and does not represent the true population size of Austria. It is published alongside the \proglang{R}-package \proglang{simFrame} \citep{Alf10} where it is used as example data. To keep this study as simple as possible, we further restrict the data for the main income holder and will only use some of the provided auxiliary information.
+In the design-based simulation we want to illustrate the use of \proglang{saeSim} when starting from data of a population. For this purpose we use a synthetic population generated from Austrian EU-SILC (European Union Statistics on Income and Living Conditions) data. The data consists of 25 thousand households and does not represent the true population size of Austria. It is published alongside the \proglang{R}-package \proglang{simFrame} \citep{Alf10} where it is used as an example data set. To keep this study as simple as possible, we further restrict the data for the main income holder and will only use some of the provided auxiliary information.
 
 \begin{Schunk}
 \begin{Sinput}
@@ -391,7 +339,7 @@ In the design-based simulation we want to illustrate the use of \proglang{saeSim
 \end{Soutput}
 \end{Schunk}
 
-For the purpose of the design-based case study we want to apply the earlier introduced BHF estimator which is implemented in the \proglang{R}-package \proglang{sae} \citep{molina13}. The function we use, \proglang{eblupBHF}, expects three data objects to produce the predictions. The sampled data, the population means of the auxiliary variables and the population sizes in each domain. To store these informations and make them available during the simulation we attach them as attributes to the population data. There are other options but setting attributes to the processed data is supported in the package and presents a very flexible form of processing data on different aggregation levels. 
+Using this data as population we want to repeatedly draw samples from it. The sampling design is to draw 10 per cent from each region with simple random sampling. For each region the direct estimator for income as well as the EBLUP under the BHF model is computed. We use the function \proglang{eblupBHF} from the package \proglang{sae} for that. This function expects three data objects to produce the predictions. The sampled data, the population means of the auxiliary variables and the population sizes in each domain. Before we can begin to construct the simulation setup we store these data tables as attributes to the population data. There are other options but setting attributes to the processed data is supported in the package and presents a very flexible form of processing data on different aggregation levels.
 
 \begin{Schunk}
 \begin{Sinput}
@@ -436,7 +384,7 @@ Source: local data frame [9 x 2]
 \end{Soutput}
 \end{Schunk}
 
-Before we come to the estimation configuration, the first step is to add a sampling scheme. As stated earlier, the starting point of a simulation setup is to provide a \proglang{data.frame} as \textit{base-component} which, in this case, is the population data. Then the sampling component is added, in which we define to draw 10 per cent of the observations from each domain with simple random sampling.
+Before we come to the estimation, the first step is to add a sampling scheme. As stated earlier, the starting point of a simulation setup is to provide a \proglang{data.frame} as \textit{base-component} which, in this case, is the population data. Then the sampling component is added, in which we define to draw 10 per cent of the observations from each domain with simple random sampling.
 
 \begin{Schunk}
 \begin{Sinput}
@@ -475,7 +423,7 @@ What now needs to be done, is to define the components which add the desired est
 \end{Sinput}
 \end{Schunk}
 
-Another positive aspect of the above definitions is, that each step is relatively small and the purpose clearly defined, which will make them easy to understand, modify and reproduce. Finally we will combine the simulation results in an \textit{aggregation-component}, possibly followed by the application of area-level models but skipped in this example. The result of this aggregation step will be a \proglang{data.frame} with one row for each region.
+Another positive aspect of the above definitions is, that each step is relatively small and the purpose clearly defined, which will make them easy to understand and reuse. Finally the simulation results are combined in an \textit{aggregation-component}, possibly followed by the application of area-level models but omitted here. The result of this aggregation step will be a \proglang{data.frame} with one row for each region.
 
 \begin{Schunk}
 \begin{Sinput}
@@ -508,7 +456,7 @@ To combine the simulation setup and the defined components we arrange them using
 \end{Soutput}
 \end{Schunk}
 
-To repeat the simulation $R$ times the simulation setup can be passed to the function \proglang{sim}, the resulting \proglang{list} is directly combined using \proglang{rbind\_all}.
+To repeat the simulation $R = 50$ times the simulation setup can be passed to the function \proglang{sim}, the resulting \proglang{list} is directly combined using \proglang{rbind\_all}.
 
 \begin{Schunk}
 \begin{Sinput}
@@ -533,7 +481,7 @@ Source: local data frame [450 x 6]
 \end{Soutput}
 \end{Schunk}
 
-To further process the simulation results we present two graphics, using the package \proglang{ggplot2} \citep{wickham09} and \proglang{reshape2} \citep{wickham07}. 
+To further process the simulation results we present two graphics, using the package \proglang{ggplot2} \citep{wickham09} and \proglang{reshape2} \citep{wickham07} for further reshaping of the data. 
 
 \begin{Schunk}
 \begin{Sinput}
@@ -549,12 +497,24 @@ To further process the simulation results we present two graphics, using the pac
 \begin{Schunk}
 \begin{Sinput}
 > library(ggplot2)
+<<<<<<< HEAD
+=======
+\end{Sinput}
+\end{Schunk}
+
+\begin{Schunk}
+\begin{Sinput}
+>>>>>>> 25649fd173765fd5e3d1c223b7975d1091be6e08
 > ggplot(ggDat, aes(x = region, y = prediction - trueStat, fill = method)) + 
 +   geom_boxplot() + theme(legend.position = "bottom")
 \end{Sinput}
 \end{Schunk}
 
+<<<<<<< HEAD
 \includegraphics[width = \textwidth]{saeSim-designSimBIAS.pdf}
+=======
+%\includegraphics[width = \textwidth]{saeSim-designSimBIAS.pdf}
+>>>>>>> 25649fd173765fd5e3d1c223b7975d1091be6e08
 
 \begin{Schunk}
 \begin{Sinput}
@@ -563,28 +523,50 @@ To further process the simulation results we present two graphics, using the pac
 \end{Sinput}
 \end{Schunk}
 
+<<<<<<< HEAD
 \includegraphics[width = \textwidth]{saeSim-designSimMSE.pdf}
+=======
+%\includegraphics[width = \textwidth]{saeSim-designSimMSE.pdf}
+>>>>>>> 25649fd173765fd5e3d1c223b7975d1091be6e08
 
   
 \section{Outlook}
 \label{sec:outlook}
+<<<<<<< HEAD
 With \proglang{saeSim} we have three objectives, making simulation tools available and reusable, unify the process behind simulations and third assist the researcher to design her code in a transparent way. By providing the package we not only want to make our own tools available but also open it for contributions. The package source is available on CRAN (\url{http://cran.r-project.org/web/packages/saeSim/}) and the repository for development on GitHub (\url{https://github.com/wahani/saeSim}). As GitHub allows to share and contribute source code using version-control, it is open for submissions. Apart from the availability of specific utility functions, we hope to promote and support the design of source code for simulation studies. One aspect is the design of simulations as processes of data. Furthermore, we encourage the definition of small and self contained components, i.e. functions, as this reduces the lines of code necessary to be read in order to understand it's purpose. 
 
 The package already provides more than introduced in this article and likewise some tools are still missing. To mention is the support of outlier contaminated data. At this time only representative outliers (outlying observations in the population) are supported. However, we plan to extend this approach for non-representative outliers (outliers are part of the sample but not the population). Furthermore, the inclusion of available random number generators available in the R-language is already possible and easy access to generate group effects as needed in mixed models is supported. Also, as the response is created by an \proglang{R} expression, any form of non-linearity in the relationship between response and auxiliary variables as well as error components can be modelled.
 
 A more technical feature is a back-end for parallel computations which is a link to the \proglang{parallel} package in \proglang{R} \citep{r14}. Tools to process result data after the simulation as well as plotting methods for that data are missing. Already available are some simple plots for the simulation setups as well as a summary method to get information on the expected runtime and structure of the resulting data.
+=======
+With \proglang{saeSim} have three objects, making simulation tools available and reusable, unify the process behind simulations and third assist the researcher to design her code in a transparent way. By providing the package we not only want to make our own tools available but also open it for contributions. The package source is available on CRAN \url{somewhere} and the repository for development at \url{https://github.com/wahani/saeSim}. As GitHub allows to share and contribute source code using version control, it is open for submissions. Apart from the availability of specific utility functions, we hope to promote and support the design of source code for simulation studies. One aspect is the design of simulations as processes of data. Furthermore by supporting the definition of small and self contained components, i.e. functions, as this reduces the lines of code to be read in order to understand it's purpose. 
+
+The package already provides more than introduced in this article and likewise some tools are still missing. The support of outlier contaminated data. At this time only representative outliers (outlying observations in the population) are supported. However, we plan to extend this approach for non-representative outliers (outliers are part of the sample but not the population). The inclusion of available random numbers from the R-language is already possible and supports easy access to generate group effects as needed in mixed models. As the response is created by an \proglang{R} expression, any form of non-linearity in the relationship between response and auxiliary variables and errors can be introduced.
+
+A more technical feature is a back-end for parallel computations which is a link to the \proglang{parallel} package in \proglang{R}. Still missing but maybe helpful are tools to process the data after the simulation as well as plotting methods for that data. Already available are some simple plots for the simulation setups as well as a summary method, to get information on the expected run time and structure of the resulting data.
+>>>>>>> 25649fd173765fd5e3d1c223b7975d1091be6e08
 
 
 \begin{itemize}
 	\item Link to simFrame?
+<<<<<<< HEAD
+=======
+	\item parallel computations
+	\item Process the results of a simulation
+>>>>>>> 25649fd173765fd5e3d1c223b7975d1091be6e08
 \end{itemize}
 
 \section{TODO}
 \begin{itemize}
+<<<<<<< HEAD
 	\item Chapter 3 + 4 - what will happen in these chapters?
 	\item kein RBIAS + RRMSE in model-based
 	\item Einleitung 4.2 was ist das ziel der design-basierten simulation
 	\item Conclusion
+=======
+	\item abstract
+	\item farbe flowchart
+>>>>>>> 25649fd173765fd5e3d1c223b7975d1091be6e08
 \end{itemize}
 
 %\bibliographystyle{plainat}
