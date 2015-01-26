@@ -141,7 +141,7 @@ Introducing the R-package saeSim} \\Replies to referee}
 %\doublespacing
 
 
-\textcolor{red}{We are very grateful to the Editor and the two reviewers for their constructive comments. We have done our best to incorporate them in the revision. The following notes explain how we addressed each comment.}
+We are very grateful to the Editor and the two reviewers for their constructive comments. These have been very helpful in preparing the revised version of this paper. We have done our best to incorporate them in the revision. The following notes explain how we addressed each comment.
 
 \section*{Replies to reviewer A}
 
@@ -155,63 +155,55 @@ The manuscript introduces the R package saeSim, which simplifies writing code fo
 \item
 	Page 2: The authors cite Kolb (2013) for synthetic data generation. They should also mention what is available in R, for instance the approach by Alfons, Kraft, Templ \& Filzmoser (2011, Statistical Methods \& Applications) that is implemented in package simPop.
 	
-	\textcolor{red}{We mow reference Alfons, Kraft, Templ \& Filzmoser (2011, Statistical Methods \& Applications) together with Kolb (2013). The R-package simPop is now mentioned in the paragraph where we also cite simFrame, also on page 2.}
+	Reply: We now reference Alfons, Kraft, Templ \& Filzmoser (2011, Statistical Methods \& Applications) together with Kolb (2013). The R-package simPop is now mentioned in the paragraph where we also cite simFrame, also on page 2.
 
 \item
 	Page 2: The authors mention NUTS levels without explaining what they are. Please add a short explanation, including what the abbreviation NUTS stands for.
 	
-	\textcolor{red}{We deleted the reference to the NUTS levels. After revision the paragraph looses no relevant information to follow the argument. The revised version is now as follows:}
-	
-	\begin{quote}
-	\textit{\textcolor{red}{
+	Reply: We deleted the reference to the NUTS levels. After the revision the paragraph doesn't lose relevant information to follow the common theme. The revised version is now as follows:\\\\
+	\textit{
 	Survey statistics are used, for example, in order to deliver specific indicators as a basis for
 economic and political decision processes. Especially regional or group-specific comparisons
-are of interest (cf. Schmid and Münnich 2014). Surveys which shall provide sufficient data
+are of interest (cf. Schmid and M\"unnich 2014). Surveys which shall provide sufficient data
 for these regional indicators, however, are generally designed for larger areas. Hence, sample
 information on more detailed levels, e.g. municipalities, is hardly available so that classical
 estimation methods (direct estimators) may lead to high variances of the estimates (cf. Ghosh
 and Rao 1994). In this case, small area estimation methods may reveal highly improved results
 for the target estimates. Small area estimation has become more and more attractive over
 the last decade:
-	}}
-	\end{quote}
+	}
 
 \item
 	Page 5, last paragraph: I'm not sure which line in the simple example for the pipe operator is more readable. The line "sum(1:10)" translates into "sum of 1 to 10". The line "1:10 \%$>$\% sum" tanslates into "generate 1 to 10, then take the sum". I'm sure that the authors can find a simple example that is better suited to illustrate their point.
 	
-	\textcolor{red}{We changed the example into:}
-	\verb'colMeans(matrix(rnorm(10), ncol = 2))' \textcolor{red}{which translates to} \verb'rnorm(10) %>% matrix(ncol = 2) %>% colMeans' \textcolor{red}{, and is now an actual improvement in readability.}
+	Reply: We acknowledge that we have to be more specific here. We changed the example to:
+	\verb'colMeans(matrix(rnorm(10), ncol = 2))' which translates to \\\verb'rnorm(10) %>% matrix(ncol = 2) %>% colMeans'.
 
 \item
-	Page 6 and 7, code examples: The authors load package saeSim in each of the two code examples. Yet there is another code chunk before those examples which use functionality from the package. If readers try to execute all code in the order it appears in the paper, they will get error messages. I suggest to load the package in the beginning of Section 4 (in a separate chunk), and to remove this line from the two examples to focus on the relevant code. 
+	Page 6 and 7, code examples: The authors load package saeSim in each of the two code examples. Yet there is another code chunk before those examples which use functionality from the package. If readers try to execute all code in the order it appears in the paper, they will get error messages. I suggest to load the package in the beginning of Section 4 (in a separate chunk), and to remove this line from the two examples to focus on the relevant code.
 	
-	\textcolor{red}{We now load saeSim (and magrittr) in the beginning of section 4. We checked the code again, so that all expressions are valid when executed in the order in which they appear in the article. Also we made the seed available to the reader. Furthermore the package sae produced naming conflicts as it loads a lot of dependencies. We do not load the package but reference to it with the '::' operator, which is acceptable as we only use two functions from this package.}
+	Reply: We load now saeSim (and magrittr) in the beginning of section 4. We checked the code again, so that all expressions are valid when executed in the order in which they appear in the article. We also made the seed available to the reader. Furthermore the package sae produced naming conflicts as it loads a lot of dependencies. We do not load the package but reference to it with the '::' operator.
 
 \item
-	Page 8, last line: The authors write "... we store these data tables...". Are those data frames or data tables? In R, this can be confusing due to the data.table package. 
+	Page 8, last line: The authors write "... we store these data tables...". Are those data frames or data tables? In R, this can be confusing due to the data.table package.
 	
-	\textcolor{red}{To avoid any confusion we changed it into 'data frame'. The paragraph is quoted as a reply to you next remark.}
+	Reply: To avoid any confusion we changed it into 'data frame'. The paragraph is quoted as a reply to you next remark.
 
 \item
-	Page 9: The authors state that they store some information as attritutes to the main data frame. Attributes can be a dangerous thing in R as there are some functions for manipulating data that may remove any attributes. Please give a discussion on this issue and provide more motivation for using attributes. 
+	Page 9: The authors state that they store some information as attributes to the main data frame. Attributes can be a dangerous thing in R as there are some functions for manipulating data that may remove any attributes. Please give a discussion on this issue and provide more motivation for using attributes.
 	
-	\textcolor{red}{We agree that relying on attributes can be a weakness. The problem is, that very often we do not have a single data frame to process, but also meta data attached. We can make that meta data available by taking advantage of R's lexical scoping rules. However, this is a dangerous path as the functions in which we need that meta data are no longer self contained. They depend on the state of objects other than their arguments and we want to avoid that. Another possibility is to make meta data available only to the functions in which they are needed by using closures. This ensures that the functions are self contained but adds unnecessary complexity for the purpose of this article as advanced functional programming techniques are not "mainstream" for R users. Also we could design an own \textit{data class} which is more formal to ensure type consistency (for example using a S4-class). However, we tried to design saeSim such that it can be used with as many existing tools as possible. We think this is possible by sticking to the "data.frame in, data.frame out" philosophy. Thus, we decided to support functions which preserve attributes. All present functions in the package will preserve attributes of the main data frame. If you have suggestions to improve this we would appreciate it. We added the discussion in a separate paragraph as follows:}
-	\begin{quote}
+Reply: We agree that relying on attributes may be dangerous in R. The problem is that in some situation we have to process a single data frame plus some meta data. An alternative is to make that meta data available by taking advantage of R's lexical scoping rules. However, this may be a dangerous path as the functions, which need the meta data, are no longer self contained. They depend on the specific state of the objects instead of their arguments. We want to avoid this situation. Another possibility is to make meta data available only to the functions in which they are needed by using closures. This ensures that the functions are self contained but adds unnecessary complexity because advanced functional programming techniques are not "mainstream" for R users. We also could design an own \textit{data class} which is more formal to ensure type consistency (for example using a S4-class). However, we tried to design saeSim such that it can be used with as many existing tools as possible. We think this is possible by sticking to the "data.frame in, data.frame out" philosophy. Thus, we decided to support functions which preserve attributes. All present functions in the package will preserve attributes of the main data frame. We have added the following paragraph in the paper (Section 4.2):\\\\
 	\textit{
-	\textcolor{red}{Before we begin to construct the simulation setup, we store these data frames as attributes
-to the population data. However, extra care is is needed because not all functions for
-manipulating data frames in R will preserve their attributes. Functions in saeSim all support
-this approach. Yet, in user defined functions this needs to be kept in mind by the author.
-Adding attributes to the data is a very flexible form of processing data on different aggregation
-levels and we believe this to be a reasonable trade-off. Of course other options can be applied
-within the possibilities of the R language.
+	Before we begin to construct the simulation setup, we store these data frames as attributes to the population data. This allows us to process on the same time a single data frame and some meta data. It is important to notice that some functions for manipulating data frames in R don't preserve their attributes. The prospective user of the saeSim has to keep this in mind when implementing user defined functions. However, all functions in saeSim are able to preserve their attributes. Other options can be applied within the possibilities of the R language. For instance, one could use closures to make the meta data only available for specific functions. This approach needs advanced functional programming skills and may add an additional level of complexity to the package user. However, from our perspective, adding attributes to the data is be a very flexible form of processing data on different aggregation levels and is used in this package.
 	}
-	}
-	\end{quote}
 \item
-	Page 13: To the best of my knowledge, the preferred format for CRAN links is http://CRAN.R-project.org/package=saeSim (also note the capitalization of CRAN and R).\textcolor{red}{ -- done}
+	Page 13: To the best of my knowledge, the preferred format for CRAN links is http://CRAN.R-project.org/package=saeSim (also note the capitalization of CRAN and R).
+
+    Reply: This has been corrected.
 \item
-	Page 13: For non-representative outliers, the authors give the explanation "outliers are part of the sample but not the population". This may be confusing to some readers. I suggest that they add "e.g., incorrectly recorded values".\textcolor{red}{ -- done}
+	Page 13: For non-representative outliers, the authors give the explanation "outliers are part of the sample but not the population". This may be confusing to some readers. I suggest that they add "e.g., incorrectly recorded values".
+
+Reply: This has been added.
 	
 \end{itemize}
 
@@ -219,35 +211,31 @@ within the possibilities of the R language.
 
 \noindent Comments regarding language are given in the following. There may be more mistakes, hence I recommend that the authors ask a colleague to proofread the manuscript (preferably an English native speaker).
 
-\noindent\textcolor{red}{Our apologies for the inconvenience for proofreading the article. We followed your suggestion and the manuscript has been proofread again.}
+\noindent Reply: We strongly apology for the mistakes in the article. We did a careful double check of the paper. In addition, we followed your suggestion to check the manuscript by an English native speaker.
 
 \begin{itemize}
 \item
-	Page 1, abstract and first paragraph: "has been substantially grown" to "has grown" \textcolor{red}{-- done}
+	Page 1, abstract and first paragraph: "has been substantially grown" to "has grown" -- done
 \item
-	Page 3, line -8: "is build on a sampling model" to "is built on a sampling model" \textcolor{red}{-- done}
+	Page 3, line -8: "is build on a sampling model" to "is built on a sampling model" -- done
 \item
-	Page 4, line -2: "different point of views" to "different points of view" \textcolor{red}{-- done}
+	Page 4, line -2: "different point of views" to "different points of view" -- done
 \item
-	Page 6, lines 1-2: "In saeSim, we rely on this operator, although all functions can be used without, we strongly recommend to use it." to "In saeSim, we rely on this operator. Although all functions can be used without it, we strongly recommend its usage." \textcolor{red}{-- done}
+	Page 6, lines 1-2: "In saeSim, we rely on this operator, although all functions can be used without, we strongly recommend to use it." to "In saeSim, we rely on this operator. Although all functions can be used without it, we strongly recommend its usage." -- done
 \item
-	Page 6, second paragraph: "... which has a data.frame as input as well as return value." The correct "... which has a data.frame as input as well as as return value." is cumbersome since as appears twice in a row, so I suggest to change this to "... which has a data.frame both as input and as return value."  \textcolor{red}{-- done}
+	Page 6, second paragraph: "... which has a data.frame as input as well as return value." The correct "... which has a data.frame as input as well as as return value." is cumbersome since as appears twice in a row, so I suggest to change this to "... which has a data.frame both as input and as return value."  -- done
 
 \item
-	Page 10, first paragraph: "This focus on the definition of each component and on meeting the convention of the defined interface is the intended approach." I'm confused by this sentence, please rephrase. 
+	Page 10, first paragraph: "This focus on the definition of each component and on meeting the convention of the defined interface is the intended approach." I'm confused by this sentence, please rephrase.
 	
-	\textcolor{red}{We deleted the sentence as their seems to be no loss of information. The paragraph now reads as:}	
-	\begin{quote}
+	Reply: We acknowledge that the sentence may create some confusion to the prospective reader. Therefore, we have deleted to sentence to make the paragraph more clear. In the revised version of the paper we say the following:\\\\
 	\textit{
-	\textcolor{red}{
 		In the next step, we define components which add the estimates of interest to the data. Here we compute the direct estimator of the mean income in each domain and the EBLUP under the BHF model. Although this could be done in one step, we separate the two computations to illustrate how to combine several estimations and how to define each component independent of each other. This automatically organises the simulation and each component is arranged using the simulation framework. Hence, we define two functions, one for adding the direct estimates and one for adding the EBLUP.
 		}
-		}
-	\end{quote}
 \item
-	Page 13, second paragraph: "version-control" to "version control" \textcolor{red}{-- done}
+	Page 13, second paragraph: "version-control" to "version control". -- done
 \item
-	Page 13, second paragraph: "it's purpose" to "its purpose" \textcolor{red}{-- done}
+	Page 13, second paragraph: "it's purpose" to "its purpose". -- done
 \end{itemize}
 
 
@@ -260,36 +248,27 @@ publishing after minor revision.
 
 \begin{itemize}
 \item
-	The authors should mention - probably in Section 4 - that in order to repeat a simulation with identical results, the seed used in the original simulation has to be known. 
+	The authors should mention - probably in Section 4 - that in order to repeat a simulation with identical results, the seed used in the original simulation has to be known.
 	
-	\textcolor{red}{We added this information right before we start illustrating the model-based simulation. Also we added the seed visibly in the code as before it was set in a hidden chunk. The second paragraph in section 4.1 now reads as follows:}
-	\begin{quote}
-	\textit{
-\textcolor{red}{In this case the \textit{base-component} is a data frame with an id variable named idD and constructed with the function base\_id. Any random number generator in R can be used. However, we have normally distributed variates, for which some predefined functions are available in the package. For the reproducibility of the following results we also set the seed to 1. The seed is not part of a simulation setup in saeSim but needs to be supplied by the researcher.
-	}
-	}
-	\end{quote}
+	Reply: We agree with this comment. We have added this information right before we start illustrating the model-based simulation. We have also added the seed in the code. In the first version, the seed was set in a hidden chunk. In Section 4.1 in the revised version of the paper we say the following:\\\\
+	\textit{In this case the \textit{base-component} is a data frame with an id variable named idD and constructed with the function base\_id. Any random number generator in R can be used. However, we have normally distributed variates, for which some predefined functions are available in the package. For the reproducibility of the following results we also set the seed to 1. The seed is not part of a simulation setup in saeSim but needs to be defined by the researcher.}
+	
 \end{itemize}
 
 \vspace{0.5cm}
 
 \noindent There are some grammatical errors:
 
+\noindent Reply: We strongly apology for the grammatical errors in the article. We did a careful double check of the paper. In addition, the manuscript was checked by an English native speaker.
+
 \begin{itemize}
-\item
-	(1) abstract: remove 'been' from "...has been substantially grown" \textcolor{red}{-- changed to: "... has grown substantially"}
-\item
-	(2) Introduction: remove 'been' from "...has been substantially..." \textcolor{red}{-- changed to: "... has grown substantially"}
-\item
-	(3) Introduction (last two lines on page 1): rephrase "...reproducible research aims that the full output of the academic research,..." using "...aims at the availability of the full... " \textcolor{red}{-- done}
-\item
-	(4) Replace 'neighboured' by 'neighbouring' \textcolor{red}{-- done}
-\item
-	(5) At the end of page 1, remove '-' in "source-code" \textcolor{red}{-- done}
-\item
-	(6) In the beginning of section 2 (second line), replace 'less' by 'few' in "...for domains where less or no sampled..." \textcolor{red}{-- done}
-\item
-	(7) Below equation (1), replace 'build' by 'built' in "...introduced by Fay and Herriot (1979) is build..." \textcolor{red}{-- done}
+\item[(1)]abstract: remove 'been' from "...has been substantially grown" -- done
+\item[(2)]Introduction: remove 'been' from "...has been substantially..."-- done
+\item[(3)]Introduction (last two lines on page 1): rephrase "...reproducible research aims that the full output of the academic research,..." using "...aims at the availability of the full... " -- done
+\item[(4)]Replace 'neighboured' by 'neighbouring' -- done
+\item[(5)]At the end of page 1, remove '-' in "source-code" -- done
+\item[(6)]In the beginning of section 2 (second line), replace 'less' by 'few' in "...for domains where less or no sampled..." -- done
+\item[(7)]Below equation (1), replace 'build' by 'built' in "...introduced by Fay and Herriot (1979) is build..." -- done
 \end{itemize}
 
 
