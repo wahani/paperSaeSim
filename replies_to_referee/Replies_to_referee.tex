@@ -162,13 +162,13 @@ The manuscript introduces the R package saeSim, which simplifies writing code fo
 	
 	Reply: We deleted the reference to the NUTS levels. After the revision the paragraph doesn't lose relevant information to follow the common theme. The revised version is now as follows:\\\\
 	\textit{
-	Survey statistics are used, for example, in order to deliver specific indicators as a basis for
-economic and political decision processes. Especially regional or group-specific comparisons
-are of interest (cf. Schmid and M\"unnich 2014). Surveys which shall provide sufficient data
-for these regional indicators, however, are generally designed for larger areas. Hence, sample
+Survey statistics are used, for example, in order to deliver specific indicators as a basis for
+economic and political decision processes. Of special interest here are regional or group
+specific comparisons (cf. Schmid and Münnich 2014). Surveys which are utilized to report
+these regional indicators, however, are generally designed for larger areas. Hence sample
 information on more detailed levels, e.g. municipalities, is hardly available so that classical
 estimation methods (direct estimators) may lead to high variances of the estimates (cf. Ghosh
-and Rao 1994). In this case, small area estimation methods may reveal highly improved results
+and Rao 1994). In this case small area estimation methods may reveal highly improved results
 for the target estimates. Small area estimation has become more and more attractive over
 the last decade:
 	}
@@ -192,9 +192,17 @@ the last decade:
 \item
 	Page 9: The authors state that they store some information as attributes to the main data frame. Attributes can be a dangerous thing in R as there are some functions for manipulating data that may remove any attributes. Please give a discussion on this issue and provide more motivation for using attributes.
 	
-Reply: We agree that relying on attributes may be dangerous in R. The problem is that in some situation we have to process a single data frame plus some meta data. An alternative is to make that meta data available by taking advantage of R's lexical scoping rules. However, this may be a dangerous path as the functions, which need the meta data, are no longer self contained. They depend on the specific state of the objects instead of their arguments. We want to avoid this situation. Another possibility is to make meta data available only to the functions in which they are needed by using closures. This ensures that the functions are self contained but adds unnecessary complexity because advanced functional programming techniques are not "mainstream" for R users. We also could design an own \textit{data class} which is more formal to ensure type consistency (for example using a S4-class). However, we tried to design saeSim such that it can be used with as many existing tools as possible. We think this is possible by sticking to the "data.frame in, data.frame out" philosophy. Thus, we decided to support functions which preserve attributes. All present functions in the package will preserve attributes of the main data frame. We have added the following paragraph in the paper (Section 4.2):\\\\
+Reply: We agree that relying on attributes may be dangerous in R. The problem is that in some situation we have to process a single data frame plus some meta data. An alternative is to make that meta data available by taking advantage of R's lexical scoping rules. However, this may be a dangerous path as the functions, which need the meta data, are no longer self contained. They depend on the specific state of the objects instead of their arguments. We want to avoid this situation. Another possibility is to make meta data available only to the functions in which they are needed by using closures. This ensures that the functions are self contained but adds unnecessary complexity because advanced functional programming techniques are not "mainstream" for R users. We also could design an own \textit{data class} which is more formal to ensure type consistency (for example using a S4-class). However, we tried to design saeSim such that it can be used with as many existing tools as possible. We think this is possible by sticking to the "data.frame in, data.frame out" philosophy. Thus we decided to support functions which preserve attributes. All present functions in the package will preserve attributes of the main data frame. We added the following paragraph to section 4.2:\\\\
 	\textit{
-	Before we begin to construct the simulation setup, we store these data frames as attributes to the population data. This allows us to process on the same time a single data frame and some meta data. It is important to notice that some functions for manipulating data frames in R don't preserve their attributes. The prospective user of the saeSim has to keep this in mind when implementing user defined functions. However, all functions in saeSim are able to preserve their attributes. Other options can be applied within the possibilities of the R language. For instance, one could use closures to make the meta data only available for specific functions. This approach needs advanced functional programming skills and may add an additional level of complexity to the package user. However, from our perspective, adding attributes to the data is be a very flexible form of processing data on different aggregation levels and is used in this package.
+	Before we begin to construct the simulation setup, we store these data frames as attributes to
+the population data. This allows us to process meta data alongside the main data frame. It
+is important to note that not all functions for manipulating data frames in R preserve these
+attributes. Users of saeSim have to keep this in mind when they implement new functions.
+Defining the interfaces between components differently is one possibility to avoid the usage
+of attributes. This can be done, for example, by using generic vectors or S4 classes instead of
+data frames. However this will add complexity to the process of data manipulation underlying
+the package which we try to avoid by following the paradigm: data frame in, data frame out.
+Thus all functions in saeSim preserve the attributes of the main data frame.
 	}
 \item
 	Page 13: To the best of my knowledge, the preferred format for CRAN links is http://CRAN.R-project.org/package=saeSim (also note the capitalization of CRAN and R).
@@ -211,7 +219,7 @@ Reply: This has been added.
 
 \noindent Comments regarding language are given in the following. There may be more mistakes, hence I recommend that the authors ask a colleague to proofread the manuscript (preferably an English native speaker).
 
-\noindent Reply: We strongly apology for the mistakes in the article. We did a careful double check of the paper. In addition, we followed your suggestion to check the manuscript by an English native speaker.
+\noindent Reply: We apologise for the mistakes in the article. We did a careful double check during the revision. In addition, we followed your suggestion to check the manuscript by an English native speaker.
 
 \begin{itemize}
 \item
@@ -228,9 +236,15 @@ Reply: This has been added.
 \item
 	Page 10, first paragraph: "This focus on the definition of each component and on meeting the convention of the defined interface is the intended approach." I'm confused by this sentence, please rephrase.
 	
-	Reply: We acknowledge that the sentence may create some confusion to the prospective reader. Therefore, we have deleted to sentence to make the paragraph more clear. In the revised version of the paper we say the following:\\\\
+	Reply: We acknowledge that the sentence may create some confusion. Therefore we have deleted the sentence to improve the readability of the paragraph. In the revised version of the paper we say the following:\\\\
 	\textit{
-		In the next step, we define components which add the estimates of interest to the data. Here we compute the direct estimator of the mean income in each domain and the EBLUP under the BHF model. Although this could be done in one step, we separate the two computations to illustrate how to combine several estimations and how to define each component independent of each other. This automatically organises the simulation and each component is arranged using the simulation framework. Hence, we define two functions, one for adding the direct estimates and one for adding the EBLUP.
+In the next step, we define components which add the estimates of interest to the data. Here
+we compute the direct estimator of the mean income in each domain and the EBLUP under
+the BHF model. Although this could be done in one step, we separate the two computations to
+illustrate how to combine several estimations and how to define each component independently
+of the others. This automatically organises the simulation and each component is arranged
+using the simulation framework. Hence we define two functions, one for adding the direct
+estimates and one for adding the EBLUP.
 		}
 \item
 	Page 13, second paragraph: "version-control" to "version control". -- done
@@ -259,7 +273,7 @@ publishing after minor revision.
 
 \noindent There are some grammatical errors:
 
-\noindent Reply: We strongly apology for the grammatical errors in the article. We did a careful double check of the paper. In addition, the manuscript was checked by an English native speaker.
+\noindent Reply: We apologise for the errors in the article. We did a careful double check of the paper. In addition, the manuscript was checked by an English native speaker.
 
 \begin{itemize}
 \item[(1)]abstract: remove 'been' from "...has been substantially grown" -- done
