@@ -184,7 +184,7 @@ We present two applications of \proglang{saeSim}, one model-based simulation in 
 
 \begin{Schunk}
 \begin{Sinput}
-> library(magrittr)
+> library("magrittr")
 > colMeans(matrix(rnorm(10), ncol = 2))
 > rnorm(10) %>% matrix(ncol = 2) %>% colMeans
 \end{Sinput}
@@ -195,7 +195,7 @@ In \proglang{saeSim}, we rely on this operator. Although all functions can be us
 
 \begin{Schunk}
 \begin{Sinput}
-> library(saeSim)
+> library("saeSim")
 > setup1 <- sim_base_lm() %>% sim_sample(sample_number(5))
 > setup2 <- sim_base_lm() %>% sim_sample(sample_fraction(0.05))
 \end{Sinput}
@@ -223,13 +223,16 @@ In this case the \textit{base-component} is a data frame with an id variable nam
 > setup
 \end{Sinput}
 \begin{Soutput}
-  idD          x          v
-1   1 -2.5058152 -0.1645236
-2   2  0.7345733 -0.2533617
-3   3 -3.3425144  0.6969634
-4   4  6.3811232  0.5566632
-5   5  1.3180311 -0.6887557
-6   6 -3.2818735 -0.7074952
+data.frame [40 x 3]
+
+   idD          x          v
+1    1 -2.5058152 -0.1645236
+2    2  0.7345733 -0.2533617
+3    3 -3.3425144  0.6969634
+4    4  6.3811232  0.5566632
+5    5  1.3180311 -0.6887557
+6    6 -3.2818735 -0.7074952
+.. ...        ...        ...
 \end{Soutput}
 \end{Schunk}
 
@@ -246,13 +249,16 @@ Note that if you print a simulation setup to the console, as in the above exampl
 > setup
 \end{Sinput}
 \begin{Soutput}
-  idD          x          v vardir          e
-1   1 -2.2746749 -0.5059575    0.1  0.1344285
-2   2 -0.5407145  1.3430388    0.2 -0.1067262
-3   3  4.7123480 -0.2145794    0.3  0.5797550
-4   4 -6.0942672 -0.1795565    0.4  0.5606229
-5   5  2.3757848 -0.1001907    0.5 -0.4378710
-6   6  1.3318015  0.7126663    0.6  1.7088396
+data.frame [40 x 5]
+
+   idD          x          v vardir          e
+1    1 -2.2746749 -0.5059575    0.1  0.1344285
+2    2 -0.5407145  1.3430388    0.2 -0.1067262
+3    3  4.7123480 -0.2145794    0.3  0.5797550
+4    4 -6.0942672 -0.1795565    0.4  0.5606229
+5    5  2.3757848 -0.1001907    0.5 -0.4378710
+6    6  1.3318015  0.7126663    0.6  1.7088396
+.. ...        ...        ...    ...        ...
 \end{Soutput}
 \end{Schunk}
 
@@ -266,26 +272,29 @@ The last step in data generation is to construct the response variable which is 
 \end{Sinput}
 \end{Schunk}
 
-To add the area-level predictions from a Fay-Herriot model we need to define another component. The function takes a \proglang{data.frame} as input and returns the modified version. For the estimation of the EBLUP under the FH model we use the function \proglang{eblupFH} from the package \proglang{sae} \citep{molina13}. Hence we define a function named \proglang{comp\_FH} and add it to the process:
+To add the area-level predictions from a Fay-Herriot model we need to define another component. The function takes a \proglang{data.frame} as input and returns the modified version. For the estimation of the EBLUP under the FH model we use the function \proglang{eblupFH} from the package \proglang{sae} \citep{molina13}. To avoid naming conflicts between the dependencies of \proglang{sae} and the package \proglang{dplyr} \citep{wickham14a} we make use of the double colon operator in order to access the function without attaching the package. Hence we define a function named \proglang{comp\_FH} and add it to the process:
 
 \begin{Schunk}
 \begin{Sinput}
 > comp_FH <- function(dat) {
 +   modelFH <- sae::eblupFH(y ~ x, vardir, data = dat)
-+   dat$FH <- modelFH$eblup
++   dat$FH <- as.numeric(modelFH$eblup)
 +   dat
 + }
 > setup <- setup %>% sim_comp_agg(comp_FH)
 > setup
 \end{Sinput}
 \begin{Soutput}
-  idD         x          v vardir          e         y  trueStat        FH
-1   1  1.637607  0.7073107    0.1  0.1258998 104.10843 103.98253 104.06121
-2   2  6.755493  1.0341077    0.2 -0.1822523 114.36284 114.54509 114.23876
-3   3  6.346354  0.2234804    0.3  0.7253263 113.64151 112.91619 113.45213
-4   4 -1.323631 -0.8787076    0.4 -0.4434978  96.03053  96.47403  96.45416
-5   5 -9.140942  1.1629646    0.5 -0.4105563  82.47052  82.88108  82.46045
-6   6  9.990646 -2.0001649    0.6 -0.7754272 117.20570 117.98113 118.08379
+data.frame [40 x 8]
+
+   idD         x          v vardir          e         y  trueStat        FH
+1    1  1.637607  0.7073107    0.1  0.1258998 104.10843 103.98253 104.06121
+2    2  6.755493  1.0341077    0.2 -0.1822523 114.36284 114.54509 114.23876
+3    3  6.346354  0.2234804    0.3  0.7253263 113.64151 112.91619 113.45213
+4    4 -1.323631 -0.8787076    0.4 -0.4434978  96.03053  96.47403  96.45416
+5    5 -9.140942  1.1629646    0.5 -0.4105563  82.47052  82.88108  82.46045
+6    6  9.990646 -2.0001649    0.6 -0.7754272 117.20570 117.98113 118.08379
+.. ...       ...        ...    ...        ...       ...       ...       ...
 \end{Soutput}
 \end{Schunk}
 
@@ -293,7 +302,7 @@ The object \proglang{setup} stores all necessary information to run one iteratio
 
 \begin{Schunk}
 \begin{Sinput}
-> library(dplyr)
+> library("dplyr")
 > simResults <- sim(setup, R = 100) %>% rbind_all
 > simResults %>% select(idD, idR, simName, trueStat, y, FH)
 \end{Sinput}
@@ -398,13 +407,16 @@ Before we come to the estimation, the first step is to add a sampling scheme. As
 > setup
 \end{Sinput}
 \begin{Soutput}
-      region eqIncome age agesq gender
-1 Burgenland 23572.28  67  4489   male
-2 Burgenland 24056.37  26   676   male
-3 Burgenland 21613.73  46  2116   male
-4 Burgenland 11750.30  40  1600   male
-5 Burgenland  9664.08  80  6400 female
-6 Burgenland 19369.91  63  3969 female
+data.frame [2,500 x 5]
+
+       region eqIncome age agesq gender
+1  Burgenland 23572.28  67  4489   male
+2  Burgenland 24056.37  26   676   male
+3  Burgenland 21613.73  46  2116   male
+4  Burgenland 11750.30  40  1600   male
+5  Burgenland  9664.08  80  6400 female
+6  Burgenland 19369.91  63  3969 female
+..        ...      ... ...   ...    ...
 \end{Soutput}
 \end{Schunk}
 
@@ -451,13 +463,16 @@ To combine the simulation setup and the defined components we arrange them using
 > setup
 \end{Sinput}
 \begin{Soutput}
-         region   direct      BHF trueStat
-1    Burgenland 21933.95 21255.53 22005.42
-2 Lower Austria 18885.08 19036.29 19813.37
-3        Vienna 20734.08 20720.48 20395.84
-4     Carinthia 19211.55 19377.21 19486.18
-5        Styria 18704.75 18955.96 19335.39
-6 Upper Austria 20636.94 20504.37 20517.29
+data.frame [9 x 4]
+
+          region   direct      BHF trueStat
+1     Burgenland 21933.95 21255.53 22005.42
+2  Lower Austria 18885.08 19036.29 19813.37
+3         Vienna 20734.08 20720.48 20395.84
+4      Carinthia 19211.55 19377.21 19486.18
+5         Styria 18704.75 18955.96 19335.39
+6  Upper Austria 20636.94 20504.37 20517.29
+..           ...      ...      ...      ...
 \end{Soutput}
 \end{Schunk}
 
@@ -500,7 +515,7 @@ To further process the simulation results we present two plots using the package
 
 \begin{Schunk}
 \begin{Sinput}
-> library(ggplot2)
+> library("ggplot2")
 > ggplot(ggDat, aes(x = region, y = prediction - trueStat, fill = method)) + 
 +   geom_boxplot() + theme(legend.position = "bottom")
 > ggplot(ggDat, aes(x = region, y = (prediction - trueStat)^2, fill = method)) + 
@@ -522,8 +537,6 @@ To further process the simulation results we present two plots using the package
 \caption{Monte Carlo MSE of direct vs. BHF predictor. 50 predictions for each region and estimation technique.}
 \label{fig:dbMSE}
 \end{figure}
-\clearpage
-
   
 \section{Outlook}
 \label{sec:outlook}
@@ -533,7 +546,7 @@ The package source is available on CRAN (\url{http://CRAN.R-project.org/package=
 
 The package provides more features than are introduced in this article. One may mention in this context the support of outlier contaminated data. Currently only representative outliers (outlying observations in the population) are supported \citep[cf.][]{Cha86}. However, we plan to extend this feature to non-representative outliers (outliers are part of the sample but not the population, e.g., incorrectly recorded values). Furthermore, an interface to random number generators in \proglang{R} is available. The user can also generate group effects as needed in mixed models. As the response is created by an \proglang{R} expression, any form of non-linearity in the relationship between response and auxiliary variables as well as error components can be modelled.
 
-A more technical feature is a back-end for parallel computations which is a link to the \proglang{parallel} package in \proglang{R} \citep{r14}. Tools to process result data after the simulation, i.e. summaries or plotting methods, are avenues for further research. Already available are some simple plots for the simulation setups as well as a summary method to get information on the expected runtime and structure of the resulting data.
+A more technical feature is a back-end for parallel computations which is a link to the \proglang{parallelMap} package in \proglang{R} \citep{bischl15}. Tools to process result data after the simulation, i.e. summaries or plotting methods, are avenues for further research. Already available are some simple plots for the simulation setups as well as a summary method to get information on the expected runtime and structure of the resulting data.
 
 %\bibliographystyle{plainat}
 \bibliography{saeSim}

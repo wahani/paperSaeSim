@@ -197,7 +197,7 @@ Seen this way, \proglang{saeSim} maps the different steps into \proglang{R}. Two
 We present two applications of \proglang{saeSim}, one model-based simulation in Section \ref{sec:csModel} and a design-based simulation in Section \ref{sec:csDesign}. First, though, we introduce some basic functionalities as the pipe operator (\proglang{\%>\%}) needs some explanation. The pipe operator is designed to make otherwise nested expressions more readable as a line can be read from left to right, instead from inside out \citep{bache14}. As a simple example see the following lines which are equivalent with respect to their functionality:
 
 <<eval=FALSE>>=
-library(magrittr)
+library("magrittr")
 colMeans(matrix(rnorm(10), ncol = 2))
 rnorm(10) %>% matrix(ncol = 2) %>% colMeans
 @
@@ -205,11 +205,11 @@ rnorm(10) %>% matrix(ncol = 2) %>% colMeans
 In \proglang{saeSim}, we rely on this operator. Although all functions can be used without it, we strongly recommend its usage. The following example shows some of the aspects of the package:
 
 <<eval=TRUE, echo=FALSE>>=
-library(saeSim)
+library("saeSim")
 @
 
 <<eval=FALSE>>=
-library(saeSim)
+library("saeSim")
 setup1 <- sim_base_lm() %>% sim_sample(sample_number(5))
 setup2 <- sim_base_lm() %>% sim_sample(sample_fraction(0.05))
 @
@@ -255,14 +255,15 @@ setup <- setup %>%
   sim_comp_pop(comp_var(trueStat = y - e))
 @
 
-To add the area-level predictions from a Fay-Herriot model we need to define another component. The function takes a \proglang{data.frame} as input and returns the modified version. For the estimation of the EBLUP under the FH model we use the function \proglang{eblupFH} from the package \proglang{sae} \citep{molina13}. Hence we define a function named \proglang{comp\_FH} and add it to the process:
+To add the area-level predictions from a Fay-Herriot model we need to define another component. The function takes a \proglang{data.frame} as input and returns the modified version. For the estimation of the EBLUP under the FH model we use the function \proglang{eblupFH} from the package \proglang{sae} \citep{molina13}. To avoid naming conflicts between the dependencies of \proglang{sae} and the package \proglang{dplyr} \citep{wickham14a} we make use of the double colon operator in order to access the function without attaching the package. Hence we define a function named \proglang{comp\_FH} and add it to the process:
 
 <<>>=
 comp_FH <- function(dat) {
   modelFH <- sae::eblupFH(y ~ x, vardir, data = dat)
-  dat$FH <- modelFH$eblup
+  dat$FH <- as.numeric(modelFH$eblup)
   dat
 }
+
 setup <- setup %>% sim_comp_agg(comp_FH)
 setup
 @
@@ -270,7 +271,7 @@ setup
 The object \proglang{setup} stores all necessary information to run one iteration of the simulation. In the following $R = 100$ repetitions are performed. The result is a \proglang{list} of \proglang{data.frame}s. The function \proglang{rbind\_all} from the package \proglang{dplyr} is used to combine the resulting \proglang{list}:
 
 <<>>=
-library(dplyr)
+library("dplyr")
 simResults <- sim(setup, R = 100) %>% rbind_all
 simResults %>% select(idD, idR, simName, trueStat, y, FH)
 @
@@ -376,7 +377,7 @@ ggDat <- reshape2::melt(simResults,
 @
 
 <<eval=FALSE>>=
-library(ggplot2)
+library("ggplot2")
 ggplot(ggDat, aes(x = region, y = prediction - trueStat, fill = method)) + 
   geom_boxplot() + theme(legend.position = "bottom")
 ggplot(ggDat, aes(x = region, y = (prediction - trueStat)^2, fill = method)) + 
@@ -384,7 +385,7 @@ ggplot(ggDat, aes(x = region, y = (prediction - trueStat)^2, fill = method)) +
 @
 
 <<designSimBIAS, fig = TRUE, width = 8.3, height=4, include = FALSE, echo = FALSE>>=
-library(ggplot2)
+library("ggplot2")
 ggplot(ggDat, aes(x = region, y = prediction - trueStat, fill = method)) + 
   geom_boxplot() + theme(legend.position = "bottom")
 @
@@ -406,8 +407,6 @@ ggplot(ggDat, aes(x = region, y = (prediction - trueStat)^2, fill = method)) +
 \caption{Monte Carlo MSE of direct vs. BHF predictor. 50 predictions for each region and estimation technique.}
 \label{fig:dbMSE}
 \end{figure}
-\clearpage
-
   
 \section{Outlook}
 \label{sec:outlook}
@@ -417,7 +416,7 @@ The package source is available on CRAN (\url{http://CRAN.R-project.org/package=
 
 The package provides more features than are introduced in this article. One may mention in this context the support of outlier contaminated data. Currently only representative outliers (outlying observations in the population) are supported \citep[cf.][]{Cha86}. However, we plan to extend this feature to non-representative outliers (outliers are part of the sample but not the population, e.g., incorrectly recorded values). Furthermore, an interface to random number generators in \proglang{R} is available. The user can also generate group effects as needed in mixed models. As the response is created by an \proglang{R} expression, any form of non-linearity in the relationship between response and auxiliary variables as well as error components can be modelled.
 
-A more technical feature is a back-end for parallel computations which is a link to the \proglang{parallel} package in \proglang{R} \citep{r14}. Tools to process result data after the simulation, i.e. summaries or plotting methods, are avenues for further research. Already available are some simple plots for the simulation setups as well as a summary method to get information on the expected runtime and structure of the resulting data.
+A more technical feature is a back-end for parallel computations which is a link to the \proglang{parallelMap} package in \proglang{R} \citep{bischl15}. Tools to process result data after the simulation, i.e. summaries or plotting methods, are avenues for further research. Already available are some simple plots for the simulation setups as well as a summary method to get information on the expected runtime and structure of the resulting data.
 
 %\bibliographystyle{plainat}
 \bibliography{saeSim}
