@@ -4,6 +4,7 @@
 \usepackage{wrapfig}
 \usepackage{graphicx}
 \usepackage{subcaption}
+\usepackage{placeins} % \FloatBarrier before conclusion
 
 
 %% definitions of entities in formulae
@@ -272,7 +273,7 @@ The last step in data generation is to construct the response variable which is 
 \end{Sinput}
 \end{Schunk}
 
-To add the area-level predictions from a Fay-Herriot model we need to define another component. The function takes a \proglang{data.frame} as input and returns the modified version. For the estimation of the EBLUP under the FH model we use the function \proglang{eblupFH} from the package \proglang{sae} \citep{molina13}. To avoid naming conflicts between the dependencies of \proglang{sae} and the package \proglang{dplyr} \citep{wickham14a} we make use of the double colon operator in order to access the function without attaching the package. Hence we define a function named \proglang{comp\_FH} and add it to the process:
+To add the area-level predictions from a Fay-Herriot model we need to define another component. The function takes a \proglang{data.frame} as input and returns the modified version. For the estimation of the EBLUP under the FH model we use the function \proglang{eblupFH} from the package \proglang{sae} \citep{molina13}. To avoid naming conflicts between the dependencies of \proglang{sae} and the package \proglang{dplyr} \citep{wickham14a} we make use of the double colon operator in order to call the function \proglang{eblupFH} without attaching the package. Hence we define a function named \proglang{comp\_FH} and add it to the process:
 
 \begin{Schunk}
 \begin{Sinput}
@@ -433,7 +434,7 @@ In the next step, we define components which add the estimates of interest to th
 +   popMeans <- select(attr(dat, "popMeans"), -trueStat)
 +   modelBHF <- 
 +     sae::eblupBHF(eqIncome ~ age + agesq + gender, region, meanxpop = popMeans,
-+              popnsize = attr(dat, "popN"), data = dat)
++                   popnsize = attr(dat, "popN"), data = dat)
 +   attr(dat, "BHF") <- modelBHF$eblup
 +   dat
 + }
@@ -505,11 +506,12 @@ To further process the simulation results we present two plots using the package
 
 \begin{Schunk}
 \begin{Sinput}
-> ggDat <- reshape2::melt(simResults,
-+               id.vars = c("region", "trueStat"), 
-+               measure.vars = c("BHF", "direct"), 
-+               variable.name = "method",
-+               value.name = "prediction")
+> ggDat <- reshape2::melt(
++   simResults,
++   id.vars = c("region", "trueStat"), 
++   measure.vars = c("BHF", "direct"), 
++   variable.name = "method",
++   value.name = "prediction")
 \end{Sinput}
 \end{Schunk}
 
@@ -537,7 +539,8 @@ To further process the simulation results we present two plots using the package
 \caption{Monte Carlo MSE of direct vs. BHF predictor. 50 predictions for each region and estimation technique.}
 \label{fig:dbMSE}
 \end{figure}
-  
+ 
+\FloatBarrier
 \section{Outlook}
 \label{sec:outlook}
 From our perspective, there is a need for sharing tools for data generation and simulation among the scientific community in order to guarantee the reproducibility of research. \proglang{saeSim} may provide an adequate framework for pursuing this aim in the field of small area estimation. By defining the steps of a simulation we may promote a reasonable way to communicate results in academic articles and during research. 
@@ -547,6 +550,7 @@ The package source is available on CRAN (\url{http://CRAN.R-project.org/package=
 The package provides more features than are introduced in this article. One may mention in this context the support of outlier contaminated data. Currently only representative outliers (outlying observations in the population) are supported \citep[cf.][]{Cha86}. However, we plan to extend this feature to non-representative outliers (outliers are part of the sample but not the population, e.g., incorrectly recorded values). Furthermore, an interface to random number generators in \proglang{R} is available. The user can also generate group effects as needed in mixed models. As the response is created by an \proglang{R} expression, any form of non-linearity in the relationship between response and auxiliary variables as well as error components can be modelled.
 
 A more technical feature is a back-end for parallel computations which is a link to the \proglang{parallelMap} package in \proglang{R} \citep{bischl15}. Tools to process result data after the simulation, i.e. summaries or plotting methods, are avenues for further research. Already available are some simple plots for the simulation setups as well as a summary method to get information on the expected runtime and structure of the resulting data.
+
 
 %\bibliographystyle{plainat}
 \bibliography{saeSim}
