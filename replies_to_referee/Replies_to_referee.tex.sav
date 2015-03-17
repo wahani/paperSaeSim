@@ -1,0 +1,293 @@
+\documentclass[11pt]{article}
+
+\usepackage{setspace}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage{amsmath}
+\usepackage{amsmath, amsthm, amssymb}
+%\usepackage{revsymb}
+%\usepackage{eurosym}
+\usepackage[pdftex]{graphicx}
+\usepackage{natbib}
+\usepackage{lineno}
+\usepackage{lscape}
+\usepackage{color}
+\usepackage[figuresright]{rotating}
+\newtheorem{thm}{Theorem}[section]
+\newcommand{\sgn}{\text{sgn}}
+
+\setlength{\textwidth}{15cm}
+\setlength{\textheight}{23cm} \topmargin-1cm %\evensidemargin2cm
+\oddsidemargin1cm
+
+
+\newcommand{\beq}{\begin{equation}}
+\newcommand{\eeq}{\end{equation}}
+\newcommand{\bed}{\begin{displaymath}}
+\newcommand{\eed}{\end{displaymath}}
+%
+% MATH -------------------------------------------------------------------
+\newcommand{\U}{{\cal U}}
+\newcommand{\R}{{\cal R}}
+\newcommand{\abs}[1]{\left\vert#1\right\vert}
+\newcommand{\set}[1]{\left\{#1\right\}}
+\newcommand{\bra}[1]{\left(#1\right)}
+\newcommand{\braq}[1]{\left[#1\right]}
+
+\newcommand{\eps}{\varepsilon}
+\newcommand{\si}{\sigma}
+\newcommand{\ka}{\kappa}
+\newcommand{\tr}{^{T}}
+\newcommand{\bbeta}{\boldsymbol{\beta}}
+\newcommand{\bGamma}{\boldsymbol{\Gamma}}
+\newcommand{\ppsi}{\vec{\psi}}
+\newcommand{\bpsi}{\vec\psi}
+\newcommand{\btheta}{\vec\theta}
+\newcommand{\bomega}{\vec\omega}
+\newcommand \bDelta {\vec\Delta}
+\newcommand{\bgamma}{\vec{\gamma}}
+\newcommand{\beps}{\vec{\varepsilon}}
+
+
+\def \cI {{\cal I}}
+\def \bA {{\mathbf A}}
+\def \bB {{\mathbf B}}
+\def \bC {{\mathbf C}}
+\def \bD {{\mathbf D}}
+\def \bb {{\mathbf b}}
+\def \be {{\mathbf e}}
+\def \bG {{\mathbf G}}
+\def \bH {{\mathbf H}}
+\def \bh {{\mathbf h}}
+\def \bI {{\mathbf I}}
+\def \bL {{\mathbf L}}
+\def \bn {{\mathbf n}}
+\def \br {{\mathbf r}}
+\def \bP {{\mathbf P}}
+\def \bq {{\mathbf q}}
+\def \bQ {{\mathbf Q}}
+\def \bR {{\mathbf R}}
+\def \bs {{\mathbf s}}
+\def \bt {{\mathbf t}}
+\def \bX {{\mathbf X}}
+\def \bx {{\mathbf x}}
+\def \by {{\mathbf y}}
+\def \bu {{\mathbf u}}
+\def \bv {{\mathbf v}}
+\def \bV {{\mathbf V}}
+\def \bZ {{\mathbf Z}}
+\def \bz {{\mathbf z}}
+\def \bW {{\mathbf W}}
+\def \bw {{\mathbf w}}
+\def \zero {{\mathbf 0}}
+
+\def \diag {\mbox{diag}}
+\def \uno {\mathbf 1}
+
+\def \diag {\mbox{diag}}
+\def \uno {\mathbf 1}
+%\def\b#1{\mbox{\boldmath $#1$}}    % - \b: bold in formulas
+%\def\bl#1{\mbox{\footnotesize \boldmath {$#1$}}} % - \bl: bold little formulas
+\def\m#1{\mbox{#1}}                % - \m: text in formulas
+\def\ml#1{\mbox{\scriptsize #1}} % - \ml: little text in formulas
+\def\ha#1{\mbox{$\hat{\b #1}$}}
+%\def\vec#1{\mbox{\boldmath $#1$}}
+
+\newcommand{\sumuni}{\sum_{i\in\U}}
+\newcommand{\sums}{\sum_{i\in s}}
+
+\newcommand{\tcr}{\textcolor{red}}
+\newcommand{\tcb}{\textcolor{blue}}
+
+\newtheorem{Theorem}{Theorem}
+\newtheorem{Remark}{Remark}
+\newtheorem{Lemma}{Lemma}
+\newtheorem{Corollary}{Corollary}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%bibliography
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% The \cite command functions as follows:
+ %   \citet{key} ==>>                Jones et al. (1990)
+ %   \citet*{key} ==>>               Jones, Baker, and Smith (1990)
+ %   \citep{key} ==>>                (Jones et al., 1990)
+ %   \citep*{key} ==>>               (Jones, Baker, and Smith, 1990)
+ %   \citep[chap. 2]{key} ==>>       (Jones et al., 1990, chap. 2)
+ %   \citep[e.g.][]{key} ==>>        (e.g. Jones et al., 1990)
+ %   \citep[e.g.][p. 32]{key} ==>>   (e.g. Jones et al., p. 32)
+ %   \citeauthor{key} ==>>           Jones et al.
+ %   \citeauthor*{key} ==>>          Jones, Baker, and Smith
+ %   \citeyear{key} ==>>             1990
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+\title{{Simulation Tools for Small Area Estimation:\\
+Introducing the R-package saeSim} \\Replies to referee}
+\author{S. Warnholz
+\and T. Schmid
+}
+
+\date{} \maketitle
+
+%\begin{abstract}
+%This is the abstract
+%\end{abstract}
+
+
+%\textbf{Keywords:} These are the keywords.
+
+
+%\doublespacing
+
+
+We are very grateful to the Editor and the two reviewers for their constructive comments. These have been very helpful in preparing the revised version of this paper. We have done our best to incorporate them in the revision. The following notes explain how we addressed each comment.
+
+\section*{Replies to reviewer A}
+
+The manuscript introduces the R package saeSim, which simplifies writing code for simulation studies in small area statistics. The manuscript is enjoyable to read, but contains some shortcomings as well as several typos and other mistakes. The software seems useful for small area statisticians and could be a valuable contribution to the community. I particularly like the notion of treating simulation as a data manipulation process.
+
+\vspace{0.5cm}
+
+\noindent There are only minor issues that need to be addressed.
+
+\begin{itemize}
+\item
+	Page 2: The authors cite Kolb (2013) for synthetic data generation. They should also mention what is available in R, for instance the approach by Alfons, Kraft, Templ \& Filzmoser (2011, Statistical Methods \& Applications) that is implemented in package simPop.
+	
+	Reply: We now reference Alfons, Kraft, Templ \& Filzmoser (2011, Statistical Methods \& Applications) together with Kolb (2013). The R-package simPop is now mentioned in the paragraph where we also cite simFrame, also on page 2.
+
+\item
+	Page 2: The authors mention NUTS levels without explaining what they are. Please add a short explanation, including what the abbreviation NUTS stands for.
+	
+	Reply: We deleted the reference to the NUTS levels. After the revision the paragraph doesn't lose relevant information to follow the common theme. The revised version is now as follows:\\\\
+	\textit{
+	Survey statistics are used, for example, in order to deliver specific indicators as a basis for
+economic and political decision processes. Especially regional or group-specific comparisons
+are of interest (cf. Schmid and M\"unnich 2014). Surveys which shall provide sufficient data
+for these regional indicators, however, are generally designed for larger areas. Hence, sample
+information on more detailed levels, e.g. municipalities, is hardly available so that classical
+estimation methods (direct estimators) may lead to high variances of the estimates (cf. Ghosh
+and Rao 1994). In this case, small area estimation methods may reveal highly improved results
+for the target estimates. Small area estimation has become more and more attractive over
+the last decade:
+	}
+
+\item
+	Page 5, last paragraph: I'm not sure which line in the simple example for the pipe operator is more readable. The line "sum(1:10)" translates into "sum of 1 to 10". The line "1:10 \%$>$\% sum" tanslates into "generate 1 to 10, then take the sum". I'm sure that the authors can find a simple example that is better suited to illustrate their point.
+	
+	Reply: We acknowledge that we have to be more specific here. We changed the example to:
+	\verb'colMeans(matrix(rnorm(10), ncol = 2))' which translates to \\\verb'rnorm(10) %>% matrix(ncol = 2) %>% colMeans'.
+
+\item
+	Page 6 and 7, code examples: The authors load package saeSim in each of the two code examples. Yet there is another code chunk before those examples which use functionality from the package. If readers try to execute all code in the order it appears in the paper, they will get error messages. I suggest to load the package in the beginning of Section 4 (in a separate chunk), and to remove this line from the two examples to focus on the relevant code.
+	
+	\textcolor{red}{Reply: We now load saeSim (and magrittr) in the beginning of section 4. We checked the code again, so that all expressions are valid when executed in the order in which they appear in the article. Also we made the seed available to the reader. Furthermore the package sae produced naming conflicts as it loads a lot of dependencies. We do not load the package but reference to it with the '::' operator, which is acceptable as we only use two functions from this package.}
+
+\item
+	Page 8, last line: The authors write "... we store these data tables...". Are those data frames or data tables? In R, this can be confusing due to the data.table package.
+	
+	\textcolor{red}{To avoid any confusion we changed it into 'data frame'. The paragraph is quoted as a reply to you next remark.}
+
+\item
+	Page 9: The authors state that they store some information as attritutes to the main data frame. Attributes can be a dangerous thing in R as there are some functions for manipulating data that may remove any attributes. Please give a discussion on this issue and provide more motivation for using attributes.
+	
+	\textcolor{red}{We agree that relying on attributes can be a weakness. The problem is, that very often we do not have a single data frame to process, but also meta data attached. We can make that meta data available by taking advantage of R's lexical scoping rules. However, this is a dangerous path as the functions in which we need that meta data are no longer self contained. They depend on the state of objects other than their arguments and we want to avoid that. Another possibility is to make meta data available only to the functions in which they are needed by using closures. This ensures that the functions are self contained but adds unnecessary complexity for the purpose of this article as advanced functional programming techniques are not "mainstream" for R users. Also we could design an own \textit{data class} which is more formal to ensure type consistency (for example using a S4-class). However, we tried to design saeSim such that it can be used with as many existing tools as possible. We think this is possible by sticking to the "data.frame in, data.frame out" philosophy. Thus, we decided to support functions which preserve attributes. All present functions in the package will preserve attributes of the main data frame. If you have suggestions to improve this we would appreciate it. We added the discussion in a separate paragraph as follows:}
+	\begin{quote}
+	\textit{
+	\textcolor{red}{Before we begin to construct the simulation setup, we store these data frames as attributes
+to the population data. However, extra care is is needed because not all functions for
+manipulating data frames in R will preserve their attributes. Functions in saeSim all support
+this approach. Yet, in user defined functions this needs to be kept in mind by the author.
+Adding attributes to the data is a very flexible form of processing data on different aggregation
+levels and we believe this to be a reasonable trade-off. Of course other options can be applied
+within the possibilities of the R language.
+	}
+	}
+	\end{quote}
+\item
+	Page 13: To the best of my knowledge, the preferred format for CRAN links is http://CRAN.R-project.org/package=saeSim (also note the capitalization of CRAN and R).\textcolor{red}{ -- done}
+\item
+	Page 13: For non-representative outliers, the authors give the explanation "outliers are part of the sample but not the population". This may be confusing to some readers. I suggest that they add "e.g., incorrectly recorded values".\textcolor{red}{ -- done}
+	
+\end{itemize}
+
+\vspace{0.5cm}
+
+\noindent Comments regarding language are given in the following. There may be more mistakes, hence I recommend that the authors ask a colleague to proofread the manuscript (preferably an English native speaker).
+
+\noindent\textcolor{red}{Our apologies for the inconvenience for proofreading the article. We followed your suggestion and the manuscript has been proofread again.}
+
+\begin{itemize}
+\item
+	Page 1, abstract and first paragraph: "has been substantially grown" to "has grown" \textcolor{red}{-- done}
+\item
+	Page 3, line -8: "is build on a sampling model" to "is built on a sampling model" \textcolor{red}{-- done}
+\item
+	Page 4, line -2: "different point of views" to "different points of view" \textcolor{red}{-- done}
+\item
+	Page 6, lines 1-2: "In saeSim, we rely on this operator, although all functions can be used without, we strongly recommend to use it." to "In saeSim, we rely on this operator. Although all functions can be used without it, we strongly recommend its usage." \textcolor{red}{-- done}
+\item
+	Page 6, second paragraph: "... which has a data.frame as input as well as return value." The correct "... which has a data.frame as input as well as as return value." is cumbersome since as appears twice in a row, so I suggest to change this to "... which has a data.frame both as input and as return value."  \textcolor{red}{-- done}
+
+\item
+	Page 10, first paragraph: "This focus on the definition of each component and on meeting the convention of the defined interface is the intended approach." I'm confused by this sentence, please rephrase.
+	
+	\textcolor{red}{We deleted the sentence as their seems to be no loss of information. The paragraph now reads as:}	
+	\begin{quote}
+	\textit{
+	\textcolor{red}{
+		In the next step, we define components which add the estimates of interest to the data. Here we compute the direct estimator of the mean income in each domain and the EBLUP under the BHF model. Although this could be done in one step, we separate the two computations to illustrate how to combine several estimations and how to define each component independent of each other. This automatically organises the simulation and each component is arranged using the simulation framework. Hence, we define two functions, one for adding the direct estimates and one for adding the EBLUP.
+		}
+		}
+	\end{quote}
+\item
+	Page 13, second paragraph: "version-control" to "version control" \textcolor{red}{-- done}
+\item
+	Page 13, second paragraph: "it's purpose" to "its purpose" \textcolor{red}{-- done}
+\end{itemize}
+
+
+
+\pagebreak
+\section*{Replies to reviewer C}
+
+The package appears to be useful for most statisticians working with small area methods. It is a good idea to build the framework using the idea of process of data manipulation. This makes the package easy to use. The manuscript is interesting and useful, and I find it acceptable for
+publishing after minor revision.
+
+\begin{itemize}
+\item
+	The authors should mention - probably in Section 4 - that in order to repeat a simulation with identical results, the seed used in the original simulation has to be known.
+	
+	\textcolor{red}{We added this information right before we start illustrating the model-based simulation. Also we added the seed visibly in the code as before it was set in a hidden chunk. The second paragraph in section 4.1 now reads as follows:}
+	\begin{quote}
+	\textit{
+\textcolor{red}{In this case the \textit{base-component} is a data frame with an id variable named idD and constructed with the function base\_id. Any random number generator in R can be used. However, we have normally distributed variates, for which some predefined functions are available in the package. For the reproducibility of the following results we also set the seed to 1. The seed is not part of a simulation setup in saeSim but needs to be supplied by the researcher.
+	}
+	}
+	\end{quote}
+\end{itemize}
+
+\vspace{0.5cm}
+
+\noindent There are some grammatical errors:
+
+\begin{itemize}
+\item
+	(1) abstract: remove 'been' from "...has been substantially grown" \textcolor{red}{-- changed to: "... has grown substantially"}
+\item
+	(2) Introduction: remove 'been' from "...has been substantially..." \textcolor{red}{-- changed to: "... has grown substantially"}
+\item
+	(3) Introduction (last two lines on page 1): rephrase "...reproducible research aims that the full output of the academic research,..." using "...aims at the availability of the full... " \textcolor{red}{-- done}
+\item
+	(4) Replace 'neighboured' by 'neighbouring' \textcolor{red}{-- done}
+\item
+	(5) At the end of page 1, remove '-' in "source-code" \textcolor{red}{-- done}
+\item
+	(6) In the beginning of section 2 (second line), replace 'less' by 'few' in "...for domains where less or no sampled..." \textcolor{red}{-- done}
+\item
+	(7) Below equation (1), replace 'build' by 'built' in "...introduced by Fay and Herriot (1979) is build..." \textcolor{red}{-- done}
+\end{itemize}
+
+
+\end{document}
